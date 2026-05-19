@@ -1,5 +1,8 @@
+import fs from 'fs-extra';
+import path from 'node:path';
 import { countDownloadsToday, listHistory, recordDownload } from '../services/historyService.js';
 import { createDownload, fetchMediaInfo } from '../services/ytdlpService.js';
+import { downloadsDir } from '../utils/files.js';
 import { parseSupportedUrl } from '../utils/platform.js';
 
 const allowedTypes = new Set(['video', 'audio', 'subtitles', 'thumbnail']);
@@ -77,6 +80,44 @@ export const downloadMedia = async (req, res, next) => {
     });
   } catch (error) {
     error.publicMessage = error.statusCode ? error.message : 'Download failed. The platform may be blocking this media or the format is unavailable.';
+    next(error);
+  }
+};
+
+export const serveDownloadFile = async (req, res, next) => {
+  const requestedFileName = req.params.fileName;
+  const fileName = path.basename(requestedFileName);
+
+  if (fileName !== requestedFileName) {
+    const error = new Error('Invalid download file.');
+    error.statusCode = 400;
+    next(error);
+    return;
+  }
+
+  const filePath = path.join(downloadsDir, fileName);
+
+  try {
+    const stat = await fs.stat(filePath);
+
+    if (!stat.isFile()) {
+      const error = new Error('Download file was not found.');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res.download(filePath, fileName, async (error) => {
+      await fs.remove(filePath).catch((cleanupError) => {
+        console.error('Download cleanup failed:', cleanupError.message);
+      });
+
+      if (error && !res.headersSent) {
+        next(error);
+      }
+    });
+  } catch (error) {
+    error.statusCode = error.statusCode || 404;
+    error.publicMessage = 'Download file was not found or has expired.';
     next(error);
   }
 };

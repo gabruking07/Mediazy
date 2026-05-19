@@ -85,7 +85,7 @@ export default function DownloadCard({
           <div className="min-w-0 rounded-xl border border-brand/25 bg-brand/10 p-3 sm:p-4">
             <p className="font-semibold text-white">Ready to download</p>
             <p className="mt-1 break-words text-sm text-slate-300">
-              {result.fileName} · {formatBytes(result.fileSize)} · expires in {result.expiresInMinutes} minutes
+              {result.fileName} · {formatBytes(result.fileSize)} · server copy is removed after saving
             </p>
             <a
               className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 font-bold text-ink transition hover:bg-emerald-300 sm:w-auto"
