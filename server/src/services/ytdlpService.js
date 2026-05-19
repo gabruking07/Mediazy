@@ -1,4 +1,5 @@
 import fs from 'fs-extra';
+import os from 'node:os';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
 import ytdlp from 'yt-dlp-exec';
@@ -8,9 +9,37 @@ import { isShortFormVideo } from '../utils/platform.js';
 
 const ytdlpBaseOptions = {
   noWarnings: true,
-  noCallHome: true,
   preferFreeFormats: true,
   forceIpv4: true
+};
+
+const runtimeCookiesPath = process.env.YTDLP_COOKIES_PATH ||
+  (process.env.YTDLP_COOKIES_BASE64 ? path.join(os.tmpdir(), 'mediazy-ytdlp-cookies.txt') : '');
+let cookiesReady;
+
+const ensureCookiesFile = async () => {
+  if (process.env.YTDLP_COOKIES_PATH) {
+    return process.env.YTDLP_COOKIES_PATH;
+  }
+
+  if (!process.env.YTDLP_COOKIES_BASE64) {
+    return '';
+  }
+
+  if (!cookiesReady) {
+    cookiesReady = fs.outputFile(
+      runtimeCookiesPath,
+      Buffer.from(process.env.YTDLP_COOKIES_BASE64, 'base64').toString('utf8'),
+      { mode: 0o600 }
+    ).then(() => runtimeCookiesPath);
+  }
+
+  return cookiesReady;
+};
+
+const runtimeOptions = async () => {
+  const cookies = await ensureCookiesFile();
+  return cookies ? { cookies } : {};
 };
 
 const youtubeOptionVariants = [
@@ -69,11 +98,13 @@ const publicYtdlpError = (error) => (
 
 const runYtdlpWithFallbacks = async ({ url, platform, options }) => {
   let lastError;
+  const extraOptions = await runtimeOptions();
 
   for (const variant of optionVariantsForPlatform(platform)) {
     try {
       return await ytdlp(url, {
         ...ytdlpBaseOptions,
+        ...extraOptions,
         ...variant,
         ...options
       });
