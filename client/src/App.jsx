@@ -19,8 +19,9 @@ import UrlForm from './components/UrlForm.jsx';
 
 const SUPPORTED_PLATFORMS = [
   {
-    label: 'YouTube',
-    hosts: ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be', 'music.youtube.com'],
+    label: 'Video',
+    hosts: [],
+    acceptsAnyVideo: true,
   },
   {
     label: 'Instagram Reels',
@@ -48,6 +49,15 @@ function isUrlForPlatform(value, platform) {
   try {
     const { hostname } = new URL(value);
     const cleanHost = hostname.toLowerCase().replace(/^www\./, '');
+
+    if (platform.acceptsAnyVideo) {
+      return !SUPPORTED_PLATFORMS
+        .filter((item) => !item.acceptsAnyVideo)
+        .some((item) => item.hosts.some((host) => {
+          const cleanPlatformHost = host.replace(/^www\./, '');
+          return cleanHost === cleanPlatformHost || cleanHost.endsWith(`.${cleanPlatformHost}`);
+        }));
+    }
 
     return platform.hosts.some((host) => {
       const cleanPlatformHost = host.replace(/^www\./, '');
@@ -301,7 +311,7 @@ export default function App() {
           <div className="min-w-0">
             <div className="mb-3 inline-flex max-w-full items-center gap-2 rounded-full border border-white/12 bg-white/8 px-3 py-2 text-xs font-semibold text-slate-300 sm:mb-4 sm:px-4 sm:text-sm">
               <Sparkles size={16} className="text-brand" />
-              <span className="truncate">All-in-one social media downloader</span>
+              <span className="truncate">All-in-one video downloader</span>
             </div>
             <h1 className="max-w-3xl break-words text-[2.35rem] font-black leading-[0.98] text-white min-[390px]:text-[2.8rem] sm:text-5xl md:text-6xl">
               Mediazy downloads videos without the clutter.
@@ -349,9 +359,9 @@ export default function App() {
                 <BadgeCheck size={19} />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-bold text-white sm:text-base">Choose a platform first</p>
+                <p className="text-sm font-bold text-white sm:text-base">Choose a link type first</p>
                 <p className="mt-1 text-xs leading-5 text-slate-400 sm:text-sm sm:leading-6">
-                  The link box only accepts URLs for the selected platform.
+                  Video accepts regular video links, while social apps use their own buttons.
                 </p>
               </div>
             </div>

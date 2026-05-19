@@ -12,6 +12,11 @@ export const ensureDownloadDir = async () => {
 };
 
 export const publicDownloadUrl = (fileName) => {
-  const baseUrl = process.env.PUBLIC_BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
-  return `${baseUrl.replace(/\/$/, '')}/api/files/${encodeURIComponent(fileName)}`;
+  const downloadPath = `/api/files/${encodeURIComponent(fileName)}`;
+
+  if (!process.env.PUBLIC_BASE_URL) {
+    return downloadPath;
+  }
+
+  return `${process.env.PUBLIC_BASE_URL.replace(/\/$/, '')}${downloadPath}`;
 };

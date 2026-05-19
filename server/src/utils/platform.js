@@ -1,9 +1,9 @@
 const platformMatchers = [
-  { platform: 'YouTube', regex: /(^|\.)((youtube\.com)|(youtu\.be))$/i },
   { platform: 'Instagram', regex: /(^|\.)instagram\.com$/i },
   { platform: 'Facebook', regex: /(^|\.)((facebook\.com)|(fb\.watch))$/i },
   { platform: 'TikTok', regex: /(^|\.)tiktok\.com$/i },
-  { platform: 'Twitter/X', regex: /(^|\.)(twitter\.com|x\.com)$/i }
+  { platform: 'Twitter/X', regex: /(^|\.)(twitter\.com|x\.com)$/i },
+  { platform: 'Video', regex: /.+/ }
 ];
 
 export const parseSupportedUrl = (value) => {
@@ -25,12 +25,6 @@ export const parseSupportedUrl = (value) => {
 
   const hostname = parsed.hostname.replace(/^www\./i, '');
   const match = platformMatchers.find((item) => item.regex.test(hostname));
-
-  if (!match) {
-    const error = new Error('This platform is not supported yet.');
-    error.statusCode = 400;
-    throw error;
-  }
 
   return {
     normalizedUrl: parsed.toString(),

@@ -79,8 +79,17 @@ const youtubeOptionVariants = [
   {}
 ];
 
-const optionVariantsForPlatform = (platform) => (
-  platform === 'YouTube' ? youtubeOptionVariants : [{}]
+const isYouTubeUrl = (url) => {
+  try {
+    const hostname = new URL(url).hostname.replace(/^www\./i, '');
+    return /(^|\.)((youtube\.com)|(youtu\.be))$/i.test(hostname);
+  } catch {
+    return false;
+  }
+};
+
+const optionVariantsForUrl = (url) => (
+  isYouTubeUrl(url) ? youtubeOptionVariants : [{}]
 );
 
 const secondsToDuration = (seconds) => {
@@ -132,7 +141,7 @@ const runYtdlpWithFallbacks = async ({ url, platform, options }) => {
   let lastError;
   const extraOptions = await runtimeOptions();
 
-  for (const variant of optionVariantsForPlatform(platform)) {
+  for (const variant of optionVariantsForUrl(url)) {
     try {
       return await ytdlp(url, {
         ...ytdlpBaseOptions,

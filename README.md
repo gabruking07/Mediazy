@@ -4,7 +4,7 @@ Mediazy is a full-stack MERN video downloader built with React, Vite, Tailwind C
 
 ## Features
 
-- Automatic platform detection for YouTube, Instagram Reels, Facebook, TikTok, and Twitter/X
+- Automatic platform detection for regular video links, Instagram Reels, Facebook, TikTok, and Twitter/X
 - Video preview with thumbnail, title, duration, detected platform, and reel/short badges
 - Quality selection for MP4 downloads
 - MP3 audio extraction
@@ -56,7 +56,7 @@ Returns video metadata and downloadable qualities.
 
 ```json
 {
-  "url": "https://www.youtube.com/watch?v=..."
+  "url": "https://example.com/video-page"
 }
 ```
 
@@ -66,7 +66,7 @@ Creates a downloadable file and returns a temporary URL.
 
 ```json
 {
-  "url": "https://www.youtube.com/watch?v=...",
+  "url": "https://example.com/video-page",
   "type": "video",
   "quality": "720"
 }
@@ -78,7 +78,7 @@ Creates a downloadable file and returns a temporary URL.
 
 1. Deploy MongoDB with MongoDB Atlas or a managed MongoDB service.
 2. Deploy `server/` on a Node host that supports long-running processes and FFmpeg.
-3. Set `MONGO_URI`, `CLIENT_URL`, and `PUBLIC_BASE_URL` in production.
+3. Set `MONGO_URI`, `CLIENT_URL`, and optionally `PUBLIC_BASE_URL` in production.
 4. Build the client with `npm run build --prefix client`.
 5. Serve the built client from a static host or configure Express/CDN routing.
 
