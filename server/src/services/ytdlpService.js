@@ -7,10 +7,33 @@ import { nanoid } from 'nanoid';
 import { downloadsDir, publicDownloadUrl } from '../utils/files.js';
 import { isShortFormVideo } from '../utils/platform.js';
 
+const intFromEnv = (name, fallback) => {
+  const value = Number.parseInt(process.env[name], 10);
+  return Number.isFinite(value) ? value : fallback;
+};
+
+const boolFromEnv = (name, fallback) => {
+  const value = process.env[name];
+  if (value === undefined) return fallback;
+  return ['1', 'true', 'yes', 'on'].includes(value.toLowerCase());
+};
+
+const optionalIntOption = (name, optionName) => {
+  const value = Number.parseInt(process.env[name], 10);
+  return Number.isFinite(value) ? { [optionName]: value } : {};
+};
+
 const ytdlpBaseOptions = {
   noWarnings: true,
   preferFreeFormats: true,
-  forceIpv4: true
+  noPlaylist: true,
+  forceIpv4: boolFromEnv('YTDLP_FORCE_IPV4', true),
+  socketTimeout: intFromEnv('YTDLP_SOCKET_TIMEOUT_SECONDS', 30),
+  retries: intFromEnv('YTDLP_RETRIES', 5),
+  fragmentRetries: intFromEnv('YTDLP_FRAGMENT_RETRIES', 5),
+  extractorRetries: intFromEnv('YTDLP_EXTRACTOR_RETRIES', 3),
+  fileAccessRetries: intFromEnv('YTDLP_FILE_ACCESS_RETRIES', 3),
+  concurrentFragments: intFromEnv('YTDLP_CONCURRENT_FRAGMENTS', 4)
 };
 
 const runtimeCookiesPath = process.env.YTDLP_COOKIES_PATH ||
@@ -39,7 +62,14 @@ const ensureCookiesFile = async () => {
 
 const runtimeOptions = async () => {
   const cookies = await ensureCookiesFile();
-  return cookies ? { cookies } : {};
+  return {
+    ...(cookies ? { cookies } : {}),
+    ...(process.env.YTDLP_PROXY ? { proxy: process.env.YTDLP_PROXY } : {}),
+    ...(process.env.YTDLP_USER_AGENT ? { userAgent: process.env.YTDLP_USER_AGENT } : {}),
+    ...optionalIntOption('YTDLP_SLEEP_REQUESTS_SECONDS', 'sleepRequests'),
+    ...optionalIntOption('YTDLP_SLEEP_INTERVAL_SECONDS', 'sleepInterval'),
+    ...optionalIntOption('YTDLP_MAX_SLEEP_INTERVAL_SECONDS', 'maxSleepInterval')
+  };
 };
 
 const youtubeOptionVariants = [
@@ -93,6 +123,8 @@ const publicYtdlpError = (error) => (
   formatYtdlpError(error)
     .replace(/\s+/g, ' ')
     .replace(/https?:\/\/\S+/g, '')
+    .replace(/Cookie: \S+/gi, 'Cookie: [redacted]')
+    .replace(/Authorization: \S+/gi, 'Authorization: [redacted]')
     .slice(0, 300)
 );
 

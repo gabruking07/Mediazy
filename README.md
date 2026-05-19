@@ -41,6 +41,13 @@ Server variables live in `server/.env`.
 
 Client variables live in `client/.env`.
 
+Useful yt-dlp server variables:
+
+- `YTDLP_COOKIES_PATH` or `YTDLP_COOKIES_BASE64` for platforms that require browser cookies.
+- `YTDLP_PROXY` and `YTDLP_USER_AGENT` for deployment-specific network routing.
+- `YTDLP_SOCKET_TIMEOUT_SECONDS`, `YTDLP_RETRIES`, `YTDLP_FRAGMENT_RETRIES`, and `YTDLP_CONCURRENT_FRAGMENTS` for reliability and speed tuning.
+- `YTDLP_SLEEP_REQUESTS_SECONDS`, `YTDLP_SLEEP_INTERVAL_SECONDS`, and `YTDLP_MAX_SLEEP_INTERVAL_SECONDS` for gentler request pacing.
+
 ## API
 
 ### `POST /api/info`
