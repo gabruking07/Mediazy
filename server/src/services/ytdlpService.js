@@ -60,6 +60,13 @@ const formatYtdlpError = (error) => (
   'Unknown yt-dlp error'
 );
 
+const publicYtdlpError = (error) => (
+  formatYtdlpError(error)
+    .replace(/\s+/g, ' ')
+    .replace(/https?:\/\/\S+/g, '')
+    .slice(0, 300)
+);
+
 const runYtdlpWithFallbacks = async ({ url, platform, options }) => {
   let lastError;
 
@@ -74,6 +81,10 @@ const runYtdlpWithFallbacks = async ({ url, platform, options }) => {
       lastError = error;
       console.error('yt-dlp failed:', formatYtdlpError(error));
     }
+  }
+
+  if (lastError) {
+    lastError.publicMessage = publicYtdlpError(lastError);
   }
 
   throw lastError;
