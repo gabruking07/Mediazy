@@ -1,0 +1,7 @@
+node_modules
+dist
+.env
+.DS_Store
+server/downloads/*
+!server/downloads/.gitkeep
+npm-debug.log*
