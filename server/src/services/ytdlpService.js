@@ -13,12 +13,15 @@ const ytdlpBaseOptions = {
   forceIpv4: true
 };
 
-const youtubeOptions = {
-  extractorArgs: 'youtube:player_client=android,web'
-};
+const youtubeOptionVariants = [
+  { extractorArgs: 'youtube:player_client=android,web' },
+  { extractorArgs: 'youtube:player_client=web' },
+  { extractorArgs: 'youtube:player_client=android' },
+  {}
+];
 
-const optionsForPlatform = (platform) => (
-  platform === 'YouTube' ? youtubeOptions : {}
+const optionVariantsForPlatform = (platform) => (
+  platform === 'YouTube' ? youtubeOptionVariants : [{}]
 );
 
 const secondsToDuration = (seconds) => {
@@ -49,18 +52,47 @@ const uniqueQualities = (formats = []) => {
     }));
 };
 
+const formatYtdlpError = (error) => (
+  error.stderr ||
+  error.stdout ||
+  error.shortMessage ||
+  error.message ||
+  'Unknown yt-dlp error'
+);
+
+const runYtdlpWithFallbacks = async ({ url, platform, options }) => {
+  let lastError;
+
+  for (const variant of optionVariantsForPlatform(platform)) {
+    try {
+      return await ytdlp(url, {
+        ...ytdlpBaseOptions,
+        ...variant,
+        ...options
+      });
+    } catch (error) {
+      lastError = error;
+      console.error('yt-dlp failed:', formatYtdlpError(error));
+    }
+  }
+
+  throw lastError;
+};
+
 export const fetchMediaInfo = async ({ url, platform }) => {
   let info;
 
   try {
-    info = await ytdlp(url, {
-      ...ytdlpBaseOptions,
-      ...optionsForPlatform(platform),
-      dumpSingleJson: true,
-      skipDownload: true
+    info = await runYtdlpWithFallbacks({
+      url,
+      platform,
+      options: {
+        dumpSingleJson: true,
+        skipDownload: true
+      }
     });
   } catch (error) {
-    console.error('yt-dlp info failed:', error.message);
+    console.error('yt-dlp info failed:', formatYtdlpError(error));
     throw error;
   }
 
@@ -86,13 +118,6 @@ export const fetchMediaInfo = async ({ url, platform }) => {
 const buildFileName = ({ title, type, extension }) => {
   const safeTitle = sanitize(title || 'mediazy-download').slice(0, 80) || 'mediazy-download';
   return `${safeTitle}-${nanoid(8)}.${extension}`;
-};
-
-const runDownload = async (url, options) => {
-  await ytdlp(url, {
-    ...ytdlpBaseOptions,
-    ...options
-  });
 };
 
 export const createDownload = async ({ url, platform, type, quality, title }) => {
@@ -136,10 +161,13 @@ export const createDownload = async ({ url, platform, type, quality, title }) =>
   const requestedFileName = buildFileName({ title, type, extension });
   const outputTemplate = path.join(downloadsDir, requestedFileName);
 
-  await runDownload(url, {
-    ...optionsForPlatform(platform),
-    ...ytdlpOptions,
-    output: outputTemplate
+  await runYtdlpWithFallbacks({
+    url,
+    platform,
+    options: {
+      ...ytdlpOptions,
+      output: outputTemplate
+    }
   });
 
   const files = await fs.readdir(downloadsDir);
