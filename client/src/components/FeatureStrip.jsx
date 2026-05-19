@@ -9,15 +9,17 @@ const features = [
 
 export default function FeatureStrip() {
   return (
-    <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <section className="grid gap-2 sm:gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {features.map((feature) => {
         const Icon = feature.icon;
 
         return (
-          <article className="glass min-w-0 rounded-xl p-4" key={feature.title}>
-            <Icon className="mb-3 text-brand" size={22} />
-            <h3 className="font-bold text-white">{feature.title}</h3>
-            <p className="mt-1 text-sm leading-6 text-slate-400">{feature.copy}</p>
+          <article className="glass flex min-w-0 items-start gap-3 rounded-xl p-3 sm:block sm:p-4" key={feature.title}>
+            <Icon className="mt-0.5 shrink-0 text-brand sm:mb-3 sm:mt-0" size={20} />
+            <div className="min-w-0">
+              <h3 className="text-sm font-bold text-white sm:text-base">{feature.title}</h3>
+              <p className="mt-1 text-xs leading-5 text-slate-400 sm:text-sm sm:leading-6">{feature.copy}</p>
+            </div>
           </article>
         );
       })}

@@ -296,23 +296,23 @@ export default function App() {
         onProfileClick={() => setProfileOpen(true)}
       />
 
-      <main className="mx-auto grid w-full max-w-6xl min-w-0 gap-5 px-4 pb-8 pt-4 sm:px-5 sm:pb-10 sm:pt-6 md:gap-8 md:pb-12 md:pt-12">
-        <section className="grid min-w-0 gap-5 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+      <main className="mx-auto grid w-full max-w-6xl min-w-0 gap-4 px-3 pb-8 pt-4 sm:px-5 sm:pb-10 sm:pt-6 md:gap-8 md:pb-12 md:pt-12">
+        <section className="grid min-w-0 gap-4 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div className="min-w-0">
-            <div className="mb-4 inline-flex max-w-full items-center gap-2 rounded-full border border-white/12 bg-white/8 px-3 py-2 text-xs font-semibold text-slate-300 sm:px-4 sm:text-sm">
+            <div className="mb-3 inline-flex max-w-full items-center gap-2 rounded-full border border-white/12 bg-white/8 px-3 py-2 text-xs font-semibold text-slate-300 sm:mb-4 sm:px-4 sm:text-sm">
               <Sparkles size={16} className="text-brand" />
               <span className="truncate">All-in-one social media downloader</span>
             </div>
-            <h1 className="max-w-3xl break-words text-2xl font-black leading-tight text-white min-[390px]:text-3xl sm:text-5xl md:text-6xl">
+            <h1 className="max-w-3xl break-words text-[2.35rem] font-black leading-[0.98] text-white min-[390px]:text-[2.8rem] sm:text-5xl md:text-6xl">
               Mediazy downloads videos without the clutter.
             </h1>
-            <p className="mt-4 max-w-2xl break-words text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
+            <p className="mt-3 max-w-2xl break-words text-sm leading-6 text-slate-300 sm:mt-4 sm:text-lg sm:leading-8">
               Paste a link, preview the media, choose MP4, MP3, subtitles, or thumbnail, and get a temporary clean download.
             </p>
-            <div className="mt-5 grid min-w-0 grid-cols-1 gap-2 min-[360px]:grid-cols-2 min-[430px]:flex min-[430px]:flex-wrap sm:mt-6">
+            <div className="-mx-3 mt-4 flex min-w-0 gap-2 overflow-x-auto px-3 pb-1 sm:mx-0 sm:mt-6 sm:flex-wrap sm:overflow-visible sm:px-0">
               {SUPPORTED_PLATFORMS.map((platform) => (
                 <button
-                  className={`min-w-0 rounded-full border px-3 py-2 text-sm transition min-[430px]:py-1 ${
+                  className={`shrink-0 rounded-full border px-3 py-2 text-sm transition sm:shrink sm:py-1 ${
                     selectedPlatform.label === platform.label
                       ? 'border-brand/70 bg-brand/15 text-white'
                       : 'border-white/10 bg-white/8 text-slate-300 hover:border-brand/50 hover:text-white'
@@ -332,36 +332,36 @@ export default function App() {
             </div>
           </div>
 
-          <div className="glass grid min-w-0 gap-3 rounded-2xl p-3 sm:gap-4 sm:p-5">
+          <div className="glass grid min-w-0 gap-2 rounded-2xl p-3 sm:gap-4 sm:p-5">
             <div className="flex min-w-0 items-start gap-3 rounded-xl border border-white/10 bg-white/8 p-3 sm:p-4">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand/15 text-brand">
-                <LockKeyhole size={20} />
+              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand/15 text-brand sm:h-10 sm:w-10">
+                <LockKeyhole size={19} />
               </div>
               <div className="min-w-0">
-                <p className="font-bold text-white">Login before download</p>
-                <p className="mt-1 text-sm leading-6 text-slate-400">
+                <p className="text-sm font-bold text-white sm:text-base">Login before download</p>
+                <p className="mt-1 text-xs leading-5 text-slate-400 sm:text-sm sm:leading-6">
                   Guests can analyze links, but saving files requires an account.
                 </p>
               </div>
             </div>
             <div className="flex min-w-0 items-start gap-3 rounded-xl border border-white/10 bg-white/8 p-3 sm:p-4">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand/15 text-brand">
-                <BadgeCheck size={20} />
+              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand/15 text-brand sm:h-10 sm:w-10">
+                <BadgeCheck size={19} />
               </div>
               <div className="min-w-0">
-                <p className="font-bold text-white">Choose a platform first</p>
-                <p className="mt-1 text-sm leading-6 text-slate-400">
+                <p className="text-sm font-bold text-white sm:text-base">Choose a platform first</p>
+                <p className="mt-1 text-xs leading-5 text-slate-400 sm:text-sm sm:leading-6">
                   The link box only accepts URLs for the selected platform.
                 </p>
               </div>
             </div>
             <div className="flex min-w-0 items-start gap-3 rounded-xl border border-white/10 bg-white/8 p-3 sm:p-4">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand/15 text-brand">
-                <Smartphone size={20} />
+              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand/15 text-brand sm:h-10 sm:w-10">
+                <Smartphone size={19} />
               </div>
               <div className="min-w-0">
-                <p className="font-bold text-white">Save to your device</p>
-                <p className="mt-1 text-sm leading-6 text-slate-400">
+                <p className="text-sm font-bold text-white sm:text-base">Save to your device</p>
+                <p className="mt-1 text-xs leading-5 text-slate-400 sm:text-sm sm:leading-6">
                   Once prepared, the browser downloads the file to your device.
                 </p>
               </div>
