@@ -48,6 +48,7 @@ export const downloadMedia = async (req, res, next) => {
     const info = await fetchMediaInfo({ url: normalizedUrl, platform });
     const result = await createDownload({
       url: normalizedUrl,
+      platform,
       type,
       quality,
       title: info.title

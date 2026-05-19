@@ -9,8 +9,17 @@ import { isShortFormVideo } from '../utils/platform.js';
 const ytdlpBaseOptions = {
   noWarnings: true,
   noCallHome: true,
-  preferFreeFormats: true
+  preferFreeFormats: true,
+  forceIpv4: true
 };
+
+const youtubeOptions = {
+  extractorArgs: 'youtube:player_client=android,web'
+};
+
+const optionsForPlatform = (platform) => (
+  platform === 'YouTube' ? youtubeOptions : {}
+);
 
 const secondsToDuration = (seconds) => {
   if (!seconds) return 'Unknown';
@@ -41,11 +50,19 @@ const uniqueQualities = (formats = []) => {
 };
 
 export const fetchMediaInfo = async ({ url, platform }) => {
-  const info = await ytdlp(url, {
-    ...ytdlpBaseOptions,
-    dumpSingleJson: true,
-    skipDownload: true
-  });
+  let info;
+
+  try {
+    info = await ytdlp(url, {
+      ...ytdlpBaseOptions,
+      ...optionsForPlatform(platform),
+      dumpSingleJson: true,
+      skipDownload: true
+    });
+  } catch (error) {
+    console.error('yt-dlp info failed:', error.message);
+    throw error;
+  }
 
   const qualities = uniqueQualities(info.formats);
 
@@ -78,7 +95,7 @@ const runDownload = async (url, options) => {
   });
 };
 
-export const createDownload = async ({ url, type, quality, title }) => {
+export const createDownload = async ({ url, platform, type, quality, title }) => {
   let extension = 'mp4';
   let ytdlpOptions = {};
 
@@ -120,6 +137,7 @@ export const createDownload = async ({ url, type, quality, title }) => {
   const outputTemplate = path.join(downloadsDir, requestedFileName);
 
   await runDownload(url, {
+    ...optionsForPlatform(platform),
     ...ytdlpOptions,
     output: outputTemplate
   });
