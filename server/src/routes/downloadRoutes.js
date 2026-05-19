@@ -6,14 +6,14 @@ import {
   getVideoInfo,
   serveDownloadFile
 } from '../controllers/downloadController.js';
-import { requireAuth } from '../middleware/authMiddleware.js';
+import { optionalAuth, requireAuth } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
 router.post('/info', getVideoInfo);
-router.post('/download', requireAuth, downloadMedia);
+router.post('/download', optionalAuth, downloadMedia);
 router.get('/files/:fileName', serveDownloadFile);
-router.get('/quota', requireAuth, getQuota);
+router.get('/quota', optionalAuth, getQuota);
 router.get('/history', requireAuth, getHistory);
 
 export default router;

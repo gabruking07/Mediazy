@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import path from 'node:path';
-import { countDownloadsToday, listHistory, recordDownload } from '../services/historyService.js';
+import { countDownloadsToday, countGuestDownloads, listHistory, recordDownload } from '../services/historyService.js';
 import { createDownload, fetchMediaInfo } from '../services/ytdlpService.js';
 import { downloadsDir } from '../utils/files.js';
 import { parseSupportedUrl } from '../utils/platform.js';
@@ -8,10 +8,25 @@ import { parseSupportedUrl } from '../utils/platform.js';
 const allowedTypes = new Set(['video', 'audio', 'subtitles', 'thumbnail']);
 
 const getDailyDownloadLimit = () => Number(process.env.DAILY_DOWNLOAD_LIMIT || 10);
+const getGuestDownloadLimit = () => Number(process.env.GUEST_DOWNLOAD_LIMIT || 10);
 
 const getDownloadQuota = async (userId) => {
   const limit = getDailyDownloadLimit();
   const used = await countDownloadsToday(userId);
+
+  return {
+    used,
+    limit,
+    available: Math.max(limit - used, 0)
+  };
+};
+
+const getGuestQuota = async (req) => {
+  const limit = getGuestDownloadLimit();
+  const used = await countGuestDownloads({
+    ipAddress: req.ip,
+    userAgent: req.get('user-agent')
+  });
 
   return {
     used,
@@ -39,10 +54,14 @@ export const downloadMedia = async (req, res, next) => {
     const { normalizedUrl, platform } = parseSupportedUrl(req.body.url);
     const type = allowedTypes.has(req.body.type) ? req.body.type : 'video';
     const quality = req.body.quality || 'best';
-    const quota = await getDownloadQuota(req.user._id);
+    const quota = req.user
+      ? await getDownloadQuota(req.user._id)
+      : await getGuestQuota(req);
 
     if (quota.used >= quota.limit) {
-      const error = new Error(`Daily download limit reached. You can download ${quota.limit} files per day.`);
+      const error = new Error(req.user
+        ? `Daily download limit reached. You can download ${quota.limit} files per day.`
+        : `Guest download limit reached. Please log in to download more than ${quota.limit} files.`);
       error.statusCode = 429;
       throw error;
     }
@@ -64,7 +83,7 @@ export const downloadMedia = async (req, res, next) => {
       quality,
       fileName: result.fileName,
       fileSize: result.fileSize,
-      user: req.user._id,
+      ...(req.user ? { user: req.user._id } : {}),
       ipAddress: req.ip,
       userAgent: req.get('user-agent')
     });
@@ -129,8 +148,11 @@ export const serveDownloadFile = async (req, res, next) => {
 
 export const getQuota = async (req, res, next) => {
   try {
-    const quota = await getDownloadQuota(req.user._id);
-    res.json({ quota });
+    const quota = req.user
+      ? await getDownloadQuota(req.user._id)
+      : await getGuestQuota(req);
+
+    res.json({ quota, authenticated: Boolean(req.user) });
   } catch (error) {
     next(error);
   }

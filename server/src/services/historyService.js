@@ -18,6 +18,16 @@ export const countDownloadsToday = async (userId) => {
   });
 };
 
+export const countGuestDownloads = async ({ ipAddress, userAgent }) => {
+  if (mongoose.connection.readyState !== 1 || !ipAddress) return 0;
+
+  return DownloadHistory.countDocuments({
+    user: { $exists: false },
+    ipAddress,
+    ...(userAgent ? { userAgent } : {})
+  });
+};
+
 export const listHistory = async (userId) => {
   if (mongoose.connection.readyState !== 1) return [];
   return DownloadHistory.find({ user: userId }).sort({ createdAt: -1 }).limit(25).lean();

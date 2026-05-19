@@ -128,14 +128,37 @@ const formatYtdlpError = (error) => (
   'Unknown yt-dlp error'
 );
 
-const publicYtdlpError = (error) => (
-  formatYtdlpError(error)
+const publicYtdlpError = (error, platform = 'This platform') => {
+  const rawMessage = formatYtdlpError(error);
+  const lowerMessage = rawMessage.toLowerCase();
+
+  if (/requested format is not available|no video formats found|format .* not available/i.test(rawMessage)) {
+    return 'That quality or format is not available for this media. Try Best available or another format.';
+  }
+
+  if (/private|members-only|login required|sign in|cookies|not authorized|forbidden|confirm you.?re not a bot/i.test(rawMessage)) {
+    return `${platform} may require cookies, login access, or a public video link. Try a public link or configure server cookies.`;
+  }
+
+  if (/unavailable|removed|deleted|does not exist|not found|copyright/i.test(lowerMessage)) {
+    return 'This video is unavailable, removed, or blocked by the platform.';
+  }
+
+  if (/timeout|timed out|econnreset|network|unable to download webpage|temporary failure/i.test(lowerMessage)) {
+    return 'The platform did not respond in time. Try again in a moment or check the server network connection.';
+  }
+
+  if (/unsupported url|no suitable extractor/i.test(lowerMessage)) {
+    return 'This link is not supported yet. Try a direct public video link from one of the listed platforms.';
+  }
+
+  return rawMessage
     .replace(/\s+/g, ' ')
     .replace(/https?:\/\/\S+/g, '')
     .replace(/Cookie: \S+/gi, 'Cookie: [redacted]')
     .replace(/Authorization: \S+/gi, 'Authorization: [redacted]')
-    .slice(0, 300)
-);
+    .slice(0, 300);
+};
 
 const runYtdlpWithFallbacks = async ({ url, platform, options }) => {
   let lastError;
@@ -156,7 +179,7 @@ const runYtdlpWithFallbacks = async ({ url, platform, options }) => {
   }
 
   if (lastError) {
-    lastError.publicMessage = publicYtdlpError(lastError);
+    lastError.publicMessage = publicYtdlpError(lastError, platform);
   }
 
   throw lastError;

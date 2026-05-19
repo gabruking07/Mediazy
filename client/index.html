@@ -1,7 +1,87 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- <script src="https://quge5.com/88/tag.min.js" data-zone="240829" async data-cfasync="false"></script> -->
+    <script>
+      (function () {
+        var adScriptId = 'mediazy-guest-ad-script';
+        var adScriptSrc = 'https://quge5.com/88/tag.min.js';
+
+        function hasAuthToken() {
+          try {
+            return Boolean(window.localStorage.getItem('mediazy_token'));
+          } catch (error) {
+            return false;
+          }
+        }
+
+        function reloadOnceAfterAdCleanup() {
+          try {
+            if (window.sessionStorage.getItem('mediazy_ad_cleanup_reloaded')) return;
+            window.sessionStorage.setItem('mediazy_ad_cleanup_reloaded', '1');
+          } catch (error) {
+            return;
+          }
+
+          window.location.reload();
+        }
+
+        function unregisterAdServiceWorker() {
+          if (!('serviceWorker' in navigator)) return;
+
+          navigator.serviceWorker.getRegistrations().then(function (registrations) {
+            var removedAdWorker = false;
+
+            registrations.forEach(function (registration) {
+              var scriptUrl = registration.active && registration.active.scriptURL;
+
+              if (scriptUrl && scriptUrl.indexOf('/sw.js') !== -1) {
+                removedAdWorker = true;
+                registration.unregister();
+              }
+            });
+
+            if (removedAdWorker && navigator.serviceWorker.controller && hasAuthToken()) {
+              reloadOnceAfterAdCleanup();
+            }
+          }).catch(function () {});
+        }
+
+        window.MediazyAds = {
+          enable: function () {
+            if (hasAuthToken() || document.getElementById(adScriptId)) return;
+
+            var script = document.createElement('script');
+            script.id = adScriptId;
+            script.src = adScriptSrc;
+            script.async = true;
+            script.setAttribute('data-zone', '240829');
+            script.setAttribute('data-cfasync', 'false');
+            try {
+              window.sessionStorage.removeItem('mediazy_ad_cleanup_reloaded');
+            } catch (error) {}
+            document.head.appendChild(script);
+          },
+          disable: function () {
+            var script = document.getElementById(adScriptId);
+
+            if (script) {
+              script.remove();
+            }
+
+            unregisterAdServiceWorker();
+          },
+          refresh: function () {
+            if (hasAuthToken()) {
+              this.disable();
+            } else {
+              this.enable();
+            }
+          }
+        };
+
+        window.MediazyAds.refresh();
+      }());
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Mediazy downloads videos, audio, subtitles, and thumbnails from supported social platforms." />
