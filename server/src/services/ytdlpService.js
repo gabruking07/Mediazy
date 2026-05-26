@@ -98,6 +98,33 @@ const youtubeOptionVariants = [
   {}
 ];
 
+const instagramUsernamePattern = /^[A-Za-z0-9._]{1,30}$/;
+
+const normalizeInstagramUsername = (value = '') => {
+  const input = String(value).trim().replace(/^@+/, '');
+  let username = input;
+
+  try {
+    const parsed = new URL(input.includes('://') ? input : `https://${input}`);
+    if (/(^|\.)instagram\.com$/i.test(parsed.hostname.replace(/^www\./i, ''))) {
+      const [firstPathPart, secondPathPart] = parsed.pathname.split('/').filter(Boolean);
+      username = firstPathPart?.toLowerCase() === 'stories' ? secondPathPart || '' : firstPathPart || '';
+    }
+  } catch {
+    username = input;
+  }
+
+  username = username.replace(/^@+/, '').trim();
+
+  if (!instagramUsernamePattern.test(username)) {
+    const error = new Error('Enter a valid Instagram username.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  return username;
+};
+
 const isYouTubeUrl = (url) => {
   try {
     const hostname = new URL(url).hostname.replace(/^www\./i, '');
@@ -121,7 +148,9 @@ const isInstagramCollectionUrl = (url) => {
       (
         pathname.startsWith('/stories/') ||
         pathname.startsWith('/stories/highlights/') ||
-        parsed.searchParams.get('mediazy') === 'highlights'
+        parsed.searchParams.get('mediazy') === 'highlights' ||
+        /^\/[A-Za-z0-9._]+\/?$/.test(parsed.pathname) ||
+        /^\/[A-Za-z0-9._]+\/reels?\/?$/.test(parsed.pathname)
       );
   } catch {
     return false;
@@ -175,11 +204,24 @@ const isInstagramStoriesUsernameUrl = (url) => {
   }
 };
 
+const instagramErrorMessage = (status) => {
+  if (status === 400 || status === 404) {
+    return 'Instagram username was not found or is invalid.';
+  }
+
+  if (status === 401 || status === 403 || status === 429) {
+    return 'Instagram blocked this server session. Refresh YTDLP_COOKIES_BASE64 with logged-in Instagram cookies and try again.';
+  }
+
+  return 'Instagram could not be reached right now. Try again in a moment.';
+};
+
 const fetchInstagramJson = async (url) => {
   const response = await fetch(url, { headers: await instagramHeaders() });
   if (!response.ok) {
     const error = new Error(`Instagram returned ${response.status}`);
-    error.publicMessage = 'Instagram highlights could not be loaded for this username. Instagram often requires a logged-in server session even for public profiles.';
+    error.statusCode = response.status === 404 ? 404 : undefined;
+    error.publicMessage = instagramErrorMessage(response.status);
     throw error;
   }
   return response.json();
@@ -187,15 +229,24 @@ const fetchInstagramJson = async (url) => {
 
 const getInstagramProfile = async (username) => {
   const profile = await fetchInstagramJson(`https://www.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(username)}`);
-  const userId = profile?.data?.user?.id;
+  const user = profile?.data?.user;
+  const userId = user?.id;
 
   if (!userId) {
     const error = new Error('Instagram user was not found.');
-    error.publicMessage = 'Instagram user was not found or the server session cannot view this profile.';
+    error.statusCode = 404;
+    error.publicMessage = 'Instagram username was not found or this profile cannot be viewed by the server session.';
     throw error;
   }
 
-  return { profile, userId };
+  if (user.is_private) {
+    const error = new Error('Instagram account is private.');
+    error.statusCode = 403;
+    error.publicMessage = 'This Instagram account is private. Only public profiles can be fetched.';
+    throw error;
+  }
+
+  return { profile, user, userId };
 };
 
 const mediaFromReelItem = (item, fallbackName) => {
@@ -220,14 +271,13 @@ const resolveInstagramReelItems = async (reelId) => {
     .filter(Boolean);
 };
 
-const resolveInstagramStories = async (url) => {
-  const username = instagramStoryUsernameFromUrl(url);
-  const { userId } = await getInstagramProfile(username);
+const resolveInstagramStoriesForProfile = async ({ username, userId }) => {
   const items = await resolveInstagramReelItems(userId);
 
   if (!items.length) {
     const error = new Error('No active Instagram stories found.');
-    error.publicMessage = 'No active stories were found, or Instagram did not return story media for this server session.';
+    error.statusCode = 404;
+    error.publicMessage = 'No active stories are available for this public profile.';
     throw error;
   }
 
@@ -239,9 +289,13 @@ const resolveInstagramStories = async (url) => {
   };
 };
 
-const resolveInstagramHighlights = async (url) => {
-  const username = instagramUsernameFromUrl(url);
+const resolveInstagramStories = async (url) => {
+  const username = normalizeInstagramUsername(instagramStoryUsernameFromUrl(url));
   const { userId } = await getInstagramProfile(username);
+  return resolveInstagramStoriesForProfile({ username, userId });
+};
+
+const resolveInstagramHighlightsForProfile = async ({ username, userId }) => {
   const tray = await fetchInstagramJson(`https://www.instagram.com/api/v1/highlights/${userId}/highlights_tray/`);
   const highlights = (tray?.tray || [])
     .map((item) => ({
@@ -253,6 +307,7 @@ const resolveInstagramHighlights = async (url) => {
 
   if (!highlights.length) {
     const error = new Error('No Instagram highlights found.');
+    error.statusCode = 404;
     error.publicMessage = 'No highlights were found for this username.';
     throw error;
   }
@@ -264,8 +319,14 @@ const resolveInstagramHighlights = async (url) => {
   };
 };
 
-const resolveInstagramHighlightsMedia = async (url) => {
-  const target = await resolveInstagramHighlights(url);
+const resolveInstagramHighlights = async (url) => {
+  const username = normalizeInstagramUsername(instagramUsernameFromUrl(url));
+  const { userId } = await getInstagramProfile(username);
+  return resolveInstagramHighlightsForProfile({ username, userId });
+};
+
+const resolveInstagramHighlightsMediaForProfile = async ({ username, userId }) => {
+  const target = await resolveInstagramHighlightsForProfile({ username, userId });
   const itemGroups = await Promise.all(target.highlights.map(async (highlight) => {
     const reelId = highlight.id.startsWith('highlight:') ? highlight.id : `highlight:${highlight.id}`;
     const items = await resolveInstagramReelItems(reelId);
@@ -278,6 +339,7 @@ const resolveInstagramHighlightsMedia = async (url) => {
 
   if (!items.length) {
     const error = new Error('No Instagram highlight media found.');
+    error.statusCode = 404;
     error.publicMessage = 'Highlights were found, but Instagram did not return downloadable media for this server session.';
     throw error;
   }
@@ -291,6 +353,12 @@ const resolveInstagramHighlightsMedia = async (url) => {
   };
 };
 
+const resolveInstagramHighlightsMedia = async (url) => {
+  const username = normalizeInstagramUsername(instagramUsernameFromUrl(url));
+  const { userId } = await getInstagramProfile(username);
+  return resolveInstagramHighlightsMediaForProfile({ username, userId });
+};
+
 const resolveDirectInstagramCollection = async (url) => {
   if (isInstagramStoriesUsernameUrl(url)) {
     return resolveInstagramStories(url);
@@ -301,6 +369,36 @@ const resolveDirectInstagramCollection = async (url) => {
   }
 
   return null;
+};
+
+const mediaInfoFromInstagramCollection = ({ target, url, platform, shortForm }) => ({
+  id: target.username,
+  url,
+  platform,
+  title: target.title,
+  thumbnail: target.thumbnail,
+  duration: null,
+  durationText: 'Multiple items',
+  uploader: target.username,
+  webpageUrl: `https://www.instagram.com/${target.username}/`,
+  isShortForm: shortForm,
+  isCollection: true,
+  entryCount: target.items.length,
+  qualities: [{ label: 'Best available', value: 'best' }],
+  hasSubtitles: false,
+  automaticCaptions: false
+});
+
+const sectionResult = async (factory) => {
+  try {
+    const info = await factory();
+    return { ok: true, info };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error.publicMessage || error.message || 'This section could not be loaded.'
+    };
+  }
 };
 
 const secondsToDuration = (seconds) => {
@@ -353,7 +451,7 @@ const publicYtdlpError = (error, platform = 'This platform') => {
   }
 
   if (/private|members-only|login required|sign in|cookies|not authorized|forbidden|confirm you.?re not a bot/i.test(rawMessage)) {
-    return `${platform} needs a logged-in server session for this request. This can happen even when the Instagram profile is public.`;
+    return `${platform} needs a logged-in server session for this request, or the platform is blocking this server as automated traffic. Refresh the server cookies and try again.`;
   }
 
   if (/unavailable|removed|deleted|does not exist|not found|copyright/i.test(lowerMessage)) {
@@ -408,46 +506,12 @@ const runYtdlpWithFallbacks = async ({ url, platform, options }) => {
 export const fetchMediaInfo = async ({ url, platform }) => {
   if (isInstagramStoriesUsernameUrl(url)) {
     const target = await resolveInstagramStories(url);
-
-    return {
-      id: target.username,
-      url,
-      platform,
-      title: target.title,
-      thumbnail: target.thumbnail,
-      duration: null,
-      durationText: 'Multiple items',
-      uploader: target.username,
-      webpageUrl: `https://www.instagram.com/${target.username}/`,
-      isShortForm: true,
-      isCollection: true,
-      entryCount: target.items.length,
-      qualities: [{ label: 'Best available', value: 'best' }],
-      hasSubtitles: false,
-      automaticCaptions: false
-    };
+    return mediaInfoFromInstagramCollection({ target, url, platform, shortForm: true });
   }
 
   if (isInstagramHighlightsUsernameUrl(url)) {
     const target = await resolveInstagramHighlightsMedia(url);
-
-    return {
-      id: target.username,
-      url,
-      platform,
-      title: target.title,
-      thumbnail: target.thumbnail,
-      duration: null,
-      durationText: 'Multiple items',
-      uploader: target.username,
-      webpageUrl: `https://www.instagram.com/${target.username}/`,
-      isShortForm: false,
-      isCollection: true,
-      entryCount: target.items.length,
-      qualities: [{ label: 'Best available', value: 'best' }],
-      hasSubtitles: false,
-      automaticCaptions: false
-    };
+    return mediaInfoFromInstagramCollection({ target, url, platform, shortForm: false });
   }
 
   let info;
@@ -490,6 +554,42 @@ export const fetchMediaInfo = async ({ url, platform }) => {
       : [{ label: 'Best available', value: 'best' }],
     hasSubtitles: Boolean(info.subtitles && Object.keys(info.subtitles).length),
     automaticCaptions: Boolean(info.automatic_captions && Object.keys(info.automatic_captions).length)
+  };
+};
+
+export const fetchInstagramProfileMedia = async ({ username: rawUsername }) => {
+  const username = normalizeInstagramUsername(rawUsername);
+  const { userId } = await getInstagramProfile(username);
+  const storyUrl = `https://www.instagram.com/stories/${username}/`;
+  const highlightsUrl = `https://www.instagram.com/${username}/?mediazy=highlights`;
+  const reelsUrl = `https://www.instagram.com/${username}/reels/`;
+  const profileUrl = `https://www.instagram.com/${username}/`;
+
+  const [stories, highlights, reels, profile] = await Promise.all([
+    sectionResult(async () => mediaInfoFromInstagramCollection({
+      target: await resolveInstagramStoriesForProfile({ username, userId }),
+      url: storyUrl,
+      platform: 'Instagram Stories',
+      shortForm: true
+    })),
+    sectionResult(async () => mediaInfoFromInstagramCollection({
+      target: await resolveInstagramHighlightsMediaForProfile({ username, userId }),
+      url: highlightsUrl,
+      platform: 'Instagram Highlights',
+      shortForm: false
+    })),
+    sectionResult(() => fetchMediaInfo({ url: reelsUrl, platform: 'Instagram Reels' })),
+    sectionResult(() => fetchMediaInfo({ url: profileUrl, platform: 'Instagram' }))
+  ]);
+
+  return {
+    username,
+    sections: {
+      stories,
+      highlights,
+      reels,
+      profile
+    }
   };
 };
 

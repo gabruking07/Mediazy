@@ -20,7 +20,7 @@ export default function AuthModal({ open, mode, setMode, loading, onClose, onSub
         <div className="mb-5 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xl font-black text-white">{isSignup ? 'Create account' : 'Login'}</p>
-            <p className="mt-1 text-sm text-slate-400">Login is required before downloads.</p>
+            <p className="mt-1 text-sm text-slate-400">Login to manage your account and history.</p>
           </div>
           <button
             className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/10 text-slate-300 transition hover:border-brand/60 hover:text-white"

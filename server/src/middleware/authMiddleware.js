@@ -27,7 +27,7 @@ export const requireAuth = async (req, _res, next) => {
     const user = await readAuthUser(req);
 
     if (!user) {
-      const error = new Error('Login required before downloading.');
+      const error = new Error('Login required.');
       error.statusCode = 401;
       throw error;
     }
@@ -36,7 +36,7 @@ export const requireAuth = async (req, _res, next) => {
     next();
   } catch (error) {
     error.statusCode = error.statusCode || 401;
-    error.publicMessage = error.message || 'Login required before downloading.';
+    error.publicMessage = error.message || 'Login required.';
     next(error);
   }
 };

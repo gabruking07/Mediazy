@@ -4,6 +4,7 @@ import { AtSign, BadgeCheck, CheckCircle2, Clipboard, Download, Images, Link2, L
 import {
   fetchCurrentUser,
   fetchDownloadQuota,
+  fetchInstagramProfileMedia,
   fetchVideoInfo,
   loginUser,
   registerUser,
@@ -50,6 +51,24 @@ const phonePattern = /^\+?[1-9]\d{9,14}$/;
 const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 const instagramUsernamePattern = /^[A-Za-z0-9._]{1,30}$/;
 const supportEmail = 'mediazy.xyz@gmail.com';
+
+function normalizeInstagramUsernameInput(value) {
+  const input = value.trim().replace(/^@+/, '');
+
+  try {
+    const parsed = new URL(input.includes('://') ? input : `https://${input}`);
+    const host = parsed.hostname.replace(/^www\./i, '');
+
+    if (host === 'instagram.com') {
+      const [firstPathPart, secondPathPart] = parsed.pathname.split('/').filter(Boolean);
+      return firstPathPart?.toLowerCase() === 'stories' ? secondPathPart || '' : firstPathPart || '';
+    }
+  } catch {
+    return input;
+  }
+
+  return input;
+}
 
 function refreshGuestAds() {
   window.MediazyAds?.refresh?.();
@@ -243,7 +262,11 @@ function InstagramStoriesPage({
   storyCard,
   highlightsCard,
   storyError,
-  highlightsError
+  highlightsError,
+  reelsCard,
+  profileCard,
+  reelsError,
+  profileError
 }) {
   return (
     <section className="grid gap-5">
@@ -277,7 +300,7 @@ function InstagramStoriesPage({
             type="submit"
           >
             <Download size={18} />
-            Load profile
+            {loading ? 'Loading...' : 'Load profile'}
           </button>
         </div>
       </form>
@@ -300,6 +323,24 @@ function InstagramStoriesPage({
             </div>
           )}
         </div>
+
+        <div className="grid gap-3">
+          <h2 className="text-xl font-black text-white">Reels</h2>
+          {reelsCard || (
+            <div className="rounded-2xl border border-white/10 bg-white/8 p-4 text-sm text-slate-400">
+              {reelsError || 'Supported reels appear here after the username is loaded.'}
+            </div>
+          )}
+        </div>
+
+        <div className="grid gap-3">
+          <h2 className="text-xl font-black text-white">Profile media</h2>
+          {profileCard || (
+            <div className="rounded-2xl border border-white/10 bg-white/8 p-4 text-sm text-slate-400">
+              {profileError || 'Supported profile media appears here after the username is loaded.'}
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );
@@ -319,20 +360,36 @@ export default function App() {
   const [storyUsername, setStoryUsername] = useState('');
   const [storyInfo, setStoryInfo] = useState(null);
   const [highlightsInfo, setHighlightsInfo] = useState(null);
+  const [reelsInfo, setReelsInfo] = useState(null);
+  const [profileInfo, setProfileInfo] = useState(null);
   const [storyError, setStoryError] = useState('');
   const [highlightsError, setHighlightsError] = useState('');
+  const [reelsError, setReelsError] = useState('');
+  const [profileError, setProfileError] = useState('');
   const [storyQuality, setStoryQuality] = useState('best');
   const [highlightsQuality, setHighlightsQuality] = useState('best');
+  const [reelsQuality, setReelsQuality] = useState('best');
+  const [profileQuality, setProfileQuality] = useState('best');
   const [storyType, setStoryType] = useState('video');
   const [highlightsType, setHighlightsType] = useState('video');
+  const [reelsType, setReelsType] = useState('video');
+  const [profileType, setProfileType] = useState('video');
   const [storyVideoFormat, setStoryVideoFormat] = useState('mp4');
   const [highlightsVideoFormat, setHighlightsVideoFormat] = useState('mp4');
+  const [reelsVideoFormat, setReelsVideoFormat] = useState('mp4');
+  const [profileVideoFormat, setProfileVideoFormat] = useState('mp4');
   const [storyResult, setStoryResult] = useState(null);
   const [highlightsResult, setHighlightsResult] = useState(null);
+  const [reelsResult, setReelsResult] = useState(null);
+  const [profileResult, setProfileResult] = useState(null);
   const [storyDownloading, setStoryDownloading] = useState(false);
   const [highlightsDownloading, setHighlightsDownloading] = useState(false);
+  const [reelsDownloading, setReelsDownloading] = useState(false);
+  const [profileDownloading, setProfileDownloading] = useState(false);
   const [storyProgress, setStoryProgress] = useState(0);
   const [highlightsProgress, setHighlightsProgress] = useState(0);
+  const [reelsProgress, setReelsProgress] = useState(0);
+  const [profileProgress, setProfileProgress] = useState(0);
   const [user, setUser] = useState(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
@@ -396,6 +453,26 @@ export default function App() {
 
     return () => window.clearInterval(timer);
   }, [highlightsDownloading]);
+
+  useEffect(() => {
+    if (!reelsDownloading) return undefined;
+
+    const timer = window.setInterval(() => {
+      setReelsProgress((current) => (current >= 92 ? current : current + Math.ceil(Math.random() * 8)));
+    }, 700);
+
+    return () => window.clearInterval(timer);
+  }, [reelsDownloading]);
+
+  useEffect(() => {
+    if (!profileDownloading) return undefined;
+
+    const timer = window.setInterval(() => {
+      setProfileProgress((current) => (current >= 92 ? current : current + Math.ceil(Math.random() * 8)));
+    }, 700);
+
+    return () => window.clearInterval(timer);
+  }, [profileDownloading]);
 
   useEffect(() => {
     let mounted = true;
@@ -469,65 +546,101 @@ export default function App() {
   const handleInstagramUsernameAnalyze = async (event) => {
     event.preventDefault();
 
-    const username = storyUsername.trim().replace(/^@/, '');
+    const username = normalizeInstagramUsernameInput(storyUsername);
 
     if (!instagramUsernamePattern.test(username)) {
-      notifyError('Username needed', 'Enter a valid Instagram username.');
+      notifyError('Invalid username', 'Enter a valid public Instagram username or profile URL.');
       return;
     }
 
     const storyUrl = `https://www.instagram.com/stories/${username}/`;
-    const highlightsUrl = `https://www.instagram.com/${username}/?mediazy=highlights`;
 
     setLoading(true);
     setStoryResult(null);
     setHighlightsResult(null);
+    setReelsResult(null);
+    setProfileResult(null);
     setStoryInfo(null);
     setHighlightsInfo(null);
+    setReelsInfo(null);
+    setProfileInfo(null);
     setStoryError('');
     setHighlightsError('');
+    setReelsError('');
+    setProfileError('');
     setUrl(storyUrl);
     setSelectedPlatform(SUPPORTED_PLATFORMS.find((platform) => platform.label === 'Instagram Reels') || SUPPORTED_PLATFORMS[0]);
 
-    const [storyResponse, highlightsResponse] = await Promise.allSettled([
-      fetchVideoInfo(storyUrl),
-      fetchVideoInfo(highlightsUrl)
-    ]);
+    try {
+      const data = await fetchInstagramProfileMedia(username);
+      const sections = data.sections || {};
+      const applySection = ({ section, setInfo, setError, setQuality, setType, setFormat, fallback }) => {
+        if (section?.ok && section.info) {
+          setInfo(section.info);
+          setQuality('best');
+          setType('video');
+          setFormat('mp4');
+          return true;
+        }
 
-    const storyLoaded = storyResponse.status === 'fulfilled';
-    const highlightsLoaded = highlightsResponse.status === 'fulfilled';
+        setError(section?.message || fallback);
+        return false;
+      };
 
-    if (storyLoaded) {
-      setStoryInfo(storyResponse.value);
-      setStoryQuality('best');
-      setStoryType('video');
-      setStoryVideoFormat('mp4');
-    } else {
-      setStoryError('Stories could not be loaded. Instagram often requires a logged-in server session even for public profiles.');
+      const loaded = [
+        applySection({
+          section: sections.stories,
+          setInfo: setStoryInfo,
+          setError: setStoryError,
+          setQuality: setStoryQuality,
+          setType: setStoryType,
+          setFormat: setStoryVideoFormat,
+          fallback: 'No active stories are available for this public profile.'
+        }),
+        applySection({
+          section: sections.highlights,
+          setInfo: setHighlightsInfo,
+          setError: setHighlightsError,
+          setQuality: setHighlightsQuality,
+          setType: setHighlightsType,
+          setFormat: setHighlightsVideoFormat,
+          fallback: 'No highlights were found for this username.'
+        }),
+        applySection({
+          section: sections.reels,
+          setInfo: setReelsInfo,
+          setError: setReelsError,
+          setQuality: setReelsQuality,
+          setType: setReelsType,
+          setFormat: setReelsVideoFormat,
+          fallback: 'Reels could not be loaded for this profile.'
+        }),
+        applySection({
+          section: sections.profile,
+          setInfo: setProfileInfo,
+          setError: setProfileError,
+          setQuality: setProfileQuality,
+          setType: setProfileType,
+          setFormat: setProfileVideoFormat,
+          fallback: 'Profile media could not be loaded for this profile.'
+        })
+      ].filter(Boolean).length;
+
+      if (loaded) {
+        notifySuccess('Instagram profile loaded', `${loaded} section${loaded === 1 ? '' : 's'} ready below.`, 'instagram-profile');
+      } else {
+        notifyError('No media loaded', 'Instagram did not return downloadable media for this username.', 'instagram-profile');
+      }
+    } catch (error) {
+      const message = error.message || 'Instagram profile could not be loaded.';
+      setStoryError(message);
+      setHighlightsError(message);
+      setReelsError(message);
+      setProfileError(message);
+      notifyError('Could not load profile', message, 'instagram-profile');
+    } finally {
+      setLoading(false);
     }
-
-    if (highlightsLoaded) {
-      setHighlightsInfo(highlightsResponse.value);
-      setHighlightsQuality('best');
-      setHighlightsType('video');
-      setHighlightsVideoFormat('mp4');
-    } else {
-      setHighlightsError('Highlights could not be loaded. Instagram often requires a logged-in server session even for public profiles.');
-    }
-
-    if (storyLoaded && highlightsLoaded) {
-      notifySuccess('Instagram profile loaded', 'Stories and highlights are ready below.', 'instagram-profile');
-    } else if (storyLoaded || highlightsLoaded) {
-      notifySuccess(
-        'Instagram profile partially loaded',
-        storyLoaded
-          ? 'Stories are ready. Highlights need a logged-in server session.'
-          : 'Highlights are ready. Stories need a logged-in server session.',
-        'instagram-profile'
-      );
-    }
-
-    setLoading(false);
   };
 
   const handleInstagramDownload = async ({
@@ -736,6 +849,8 @@ export default function App() {
             loading={loading}
             storyError={storyError}
             highlightsError={highlightsError}
+            reelsError={reelsError}
+            profileError={profileError}
             storyCard={storyInfo && (
               <DownloadCard
                 info={storyInfo}
@@ -780,6 +895,52 @@ export default function App() {
                 downloading={highlightsDownloading}
                 progress={highlightsProgress}
                 result={highlightsResult}
+              />
+            )}
+            reelsCard={reelsInfo && (
+              <DownloadCard
+                info={reelsInfo}
+                quality={reelsQuality}
+                setQuality={setReelsQuality}
+                type={reelsType}
+                setType={setReelsType}
+                videoFormat={reelsVideoFormat}
+                setVideoFormat={setReelsVideoFormat}
+                onDownload={() => handleInstagramDownload({
+                  info: reelsInfo,
+                  type: reelsType,
+                  quality: reelsQuality,
+                  videoFormat: reelsVideoFormat,
+                  setTargetResult: setReelsResult,
+                  setTargetDownloading: setReelsDownloading,
+                  setTargetProgress: setReelsProgress
+                })}
+                downloading={reelsDownloading}
+                progress={reelsProgress}
+                result={reelsResult}
+              />
+            )}
+            profileCard={profileInfo && (
+              <DownloadCard
+                info={profileInfo}
+                quality={profileQuality}
+                setQuality={setProfileQuality}
+                type={profileType}
+                setType={setProfileType}
+                videoFormat={profileVideoFormat}
+                setVideoFormat={setProfileVideoFormat}
+                onDownload={() => handleInstagramDownload({
+                  info: profileInfo,
+                  type: profileType,
+                  quality: profileQuality,
+                  videoFormat: profileVideoFormat,
+                  setTargetResult: setProfileResult,
+                  setTargetDownloading: setProfileDownloading,
+                  setTargetProgress: setProfileProgress
+                })}
+                downloading={profileDownloading}
+                progress={profileProgress}
+                result={profileResult}
               />
             )}
           />

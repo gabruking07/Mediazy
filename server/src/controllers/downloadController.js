@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import path from 'node:path';
 import { listHistory, recordDownload } from '../services/historyService.js';
-import { createDownload, fetchMediaInfo } from '../services/ytdlpService.js';
+import { createDownload, fetchInstagramProfileMedia, fetchMediaInfo } from '../services/ytdlpService.js';
 import { downloadsDir } from '../utils/files.js';
 import { parseSupportedUrl } from '../utils/platform.js';
 
@@ -25,6 +25,18 @@ export const getVideoInfo = async (req, res, next) => {
     error.publicMessage = error.statusCode
       ? error.message
       : error.publicMessage || 'Unable to read this video. Check the URL and try again.';
+    next(error);
+  }
+};
+
+export const getInstagramProfileMedia = async (req, res, next) => {
+  try {
+    const result = await fetchInstagramProfileMedia({ username: req.body.username });
+    res.json(result);
+  } catch (error) {
+    error.publicMessage = error.statusCode
+      ? error.message
+      : error.publicMessage || 'Instagram profile could not be loaded. Check the username and try again.';
     next(error);
   }
 };

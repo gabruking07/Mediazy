@@ -30,6 +30,15 @@ export const fetchVideoInfo = async (url) => {
   }
 };
 
+export const fetchInstagramProfileMedia = async (username) => {
+  try {
+    const { data } = await api.post('/api/instagram/profile', { username });
+    return data;
+  } catch (error) {
+    throw new Error(getMessage(error));
+  }
+};
+
 export const requestDownload = async ({ url, type, quality, format }) => {
   try {
     const { data } = await api.post('/api/download', { url, type, quality, format });

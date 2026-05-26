@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   downloadMedia,
   getHistory,
+  getInstagramProfileMedia,
   getQuota,
   getVideoInfo,
   serveDownloadFile
@@ -11,6 +12,7 @@ import { optionalAuth, requireAuth } from '../middleware/authMiddleware.js';
 const router = Router();
 
 router.post('/info', getVideoInfo);
+router.post('/instagram/profile', getInstagramProfileMedia);
 router.post('/download', optionalAuth, downloadMedia);
 router.get('/files/:fileName', serveDownloadFile);
 router.get('/quota', optionalAuth, getQuota);
