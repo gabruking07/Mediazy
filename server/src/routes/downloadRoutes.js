@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   downloadMedia,
   getHistory,
+  getInstagramCookieDebug,
   getInstagramProfileMedia,
   getQuota,
   getVideoInfo,
@@ -13,6 +14,7 @@ const router = Router();
 
 router.post('/info', getVideoInfo);
 router.post('/instagram/profile', getInstagramProfileMedia);
+router.get('/instagram/cookies/debug', getInstagramCookieDebug);
 router.post('/download', optionalAuth, downloadMedia);
 router.get('/files/:fileName', serveDownloadFile);
 router.get('/quota', optionalAuth, getQuota);

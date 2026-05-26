@@ -60,23 +60,58 @@ const ensureCookiesFile = async () => {
   return cookiesReady;
 };
 
-const instagramCookieHeader = async () => {
+const parseCookieLine = (line) => {
+  const cleanLine = line.replace(/^#HttpOnly_/, '').trim();
+  if (!cleanLine || cleanLine.startsWith('#')) return null;
+
+  const parts = cleanLine.includes('\t')
+    ? cleanLine.split('\t')
+    : cleanLine.split(/\s+/);
+
+  if (parts.length < 7 || !/(^|\.)instagram\.com$/i.test(parts[0])) {
+    return null;
+  }
+
+  return {
+    domain: parts[0],
+    name: parts[5],
+    value: parts.slice(6).join('')
+  };
+};
+
+const readInstagramCookies = async () => {
   const cookiesPath = await ensureCookiesFile();
-  if (!cookiesPath) return '';
+  if (!cookiesPath) return [];
 
   try {
     const content = await fs.readFile(cookiesPath, 'utf8');
     return content
       .split(/\r?\n/)
-      .map((line) => line.replace(/^#HttpOnly_/, ''))
-      .filter((line) => line && !line.startsWith('#'))
-      .map((line) => line.split('\t'))
-      .filter((parts) => parts.length >= 7 && /(^|\.)instagram\.com$/i.test(parts[0]))
-      .map((parts) => `${parts[5]}=${parts[6]}`)
-      .join('; ');
+      .map(parseCookieLine)
+      .filter(Boolean);
   } catch {
-    return '';
+    return [];
   }
+};
+
+const instagramCookieHeader = async () => (
+  (await readInstagramCookies())
+    .map((cookie) => `${cookie.name}=${cookie.value}`)
+    .join('; ')
+);
+
+export const getInstagramCookieStatus = async () => {
+  const cookies = await readInstagramCookies();
+  const names = new Set(cookies.map((cookie) => cookie.name));
+
+  return {
+    configured: Boolean(process.env.YTDLP_COOKIES_PATH || process.env.YTDLP_COOKIES_BASE64),
+    instagramCookieCount: cookies.length,
+    hasSessionId: names.has('sessionid'),
+    hasDsUserId: names.has('ds_user_id'),
+    hasCsrfToken: names.has('csrftoken'),
+    hasMid: names.has('mid')
+  };
 };
 
 const runtimeOptions = async () => {

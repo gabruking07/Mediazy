@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import path from 'node:path';
 import { listHistory, recordDownload } from '../services/historyService.js';
-import { createDownload, fetchInstagramProfileMedia, fetchMediaInfo } from '../services/ytdlpService.js';
+import { createDownload, fetchInstagramProfileMedia, fetchMediaInfo, getInstagramCookieStatus } from '../services/ytdlpService.js';
 import { downloadsDir } from '../utils/files.js';
 import { parseSupportedUrl } from '../utils/platform.js';
 
@@ -37,6 +37,14 @@ export const getInstagramProfileMedia = async (req, res, next) => {
     error.publicMessage = error.statusCode
       ? error.message
       : error.publicMessage || 'Instagram profile could not be loaded. Check the username and try again.';
+    next(error);
+  }
+};
+
+export const getInstagramCookieDebug = async (_req, res, next) => {
+  try {
+    res.json(await getInstagramCookieStatus());
+  } catch (error) {
     next(error);
   }
 };
