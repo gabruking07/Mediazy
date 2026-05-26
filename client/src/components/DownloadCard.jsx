@@ -76,9 +76,9 @@ export default function DownloadCard({
               disabled={type !== 'video'}
               onChange={(event) => setVideoFormat(event.target.value)}
             >
-              <option value="mp4">MP4 video</option>
-              <option value="webm">WebM video</option>
-              <option value="mkv">MKV video</option>
+              <option value="mp4">MP4</option>
+              <option value="mkv">MKV</option>
+              <option value="webm">WebM</option>
             </select>
           </label>
         </div>

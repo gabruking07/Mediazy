@@ -133,6 +133,12 @@ const instagramUsernameFromUrl = (url) => {
   return parsed.pathname.split('/').filter(Boolean)[0] || '';
 };
 
+const instagramStoryUsernameFromUrl = (url) => {
+  const parsed = new URL(url);
+  const parts = parsed.pathname.split('/').filter(Boolean);
+  return parts[0]?.toLowerCase() === 'stories' ? parts[1] || '' : '';
+};
+
 const instagramHeaders = async () => {
   const cookie = await instagramCookieHeader();
   return {
@@ -156,6 +162,19 @@ const isInstagramHighlightsUsernameUrl = (url) => {
   }
 };
 
+const isInstagramStoriesUsernameUrl = (url) => {
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.replace(/^www\./i, '');
+    return /(^|\.)instagram\.com$/i.test(hostname) &&
+      parsed.pathname.toLowerCase().startsWith('/stories/') &&
+      !parsed.pathname.toLowerCase().startsWith('/stories/highlights/') &&
+      Boolean(instagramStoryUsernameFromUrl(url));
+  } catch {
+    return false;
+  }
+};
+
 const fetchInstagramJson = async (url) => {
   const response = await fetch(url, { headers: await instagramHeaders() });
   if (!response.ok) {
@@ -166,17 +185,63 @@ const fetchInstagramJson = async (url) => {
   return response.json();
 };
 
-const resolveInstagramHighlights = async (url) => {
-  const username = instagramUsernameFromUrl(url);
+const getInstagramProfile = async (username) => {
   const profile = await fetchInstagramJson(`https://www.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(username)}`);
   const userId = profile?.data?.user?.id;
 
   if (!userId) {
     const error = new Error('Instagram user was not found.');
-    error.publicMessage = 'Instagram user was not found or highlights are not available.';
+    error.publicMessage = 'Instagram user was not found or the server session cannot view this profile.';
     throw error;
   }
 
+  return { profile, userId };
+};
+
+const mediaFromReelItem = (item, fallbackName) => {
+  const video = item.video_versions?.[0];
+  const image = item.image_versions2?.candidates?.[0];
+  const mediaUrl = video?.url || image?.url;
+  if (!mediaUrl) return null;
+
+  return {
+    id: item.id || fallbackName,
+    url: mediaUrl,
+    extension: video ? 'mp4' : 'jpg',
+    thumbnail: image?.url || mediaUrl
+  };
+};
+
+const resolveInstagramReelItems = async (reelId) => {
+  const data = await fetchInstagramJson(`https://www.instagram.com/api/v1/feed/reels_media/?reel_ids=${encodeURIComponent(reelId)}`);
+  const reel = data.reels?.[reelId] || data.reels_media?.[0] || data.tray?.[0] || {};
+  return (reel.items || [])
+    .map((item, index) => mediaFromReelItem(item, `${reelId}-${index + 1}`))
+    .filter(Boolean);
+};
+
+const resolveInstagramStories = async (url) => {
+  const username = instagramStoryUsernameFromUrl(url);
+  const { userId } = await getInstagramProfile(username);
+  const items = await resolveInstagramReelItems(userId);
+
+  if (!items.length) {
+    const error = new Error('No active Instagram stories found.');
+    error.publicMessage = 'No active stories were found, or Instagram did not return story media for this server session.';
+    throw error;
+  }
+
+  return {
+    username,
+    title: `Story by ${username}`,
+    thumbnail: items[0]?.thumbnail,
+    items
+  };
+};
+
+const resolveInstagramHighlights = async (url) => {
+  const username = instagramUsernameFromUrl(url);
+  const { userId } = await getInstagramProfile(username);
   const tray = await fetchInstagramJson(`https://www.instagram.com/api/v1/highlights/${userId}/highlights_tray/`);
   const highlights = (tray?.tray || [])
     .map((item) => ({
@@ -197,6 +262,45 @@ const resolveInstagramHighlights = async (url) => {
     highlights,
     urls: highlights.map((item) => `https://www.instagram.com/stories/highlights/${item.id}/`)
   };
+};
+
+const resolveInstagramHighlightsMedia = async (url) => {
+  const target = await resolveInstagramHighlights(url);
+  const itemGroups = await Promise.all(target.highlights.map(async (highlight) => {
+    const reelId = highlight.id.startsWith('highlight:') ? highlight.id : `highlight:${highlight.id}`;
+    const items = await resolveInstagramReelItems(reelId);
+    return items.map((item, index) => ({
+      ...item,
+      id: `${sanitize(highlight.title || 'highlight')}-${index + 1}-${item.id}`
+    }));
+  }));
+  const items = itemGroups.flat();
+
+  if (!items.length) {
+    const error = new Error('No Instagram highlight media found.');
+    error.publicMessage = 'Highlights were found, but Instagram did not return downloadable media for this server session.';
+    throw error;
+  }
+
+  return {
+    username: target.username,
+    title: `${target.username} Instagram highlights`,
+    thumbnail: target.highlights[0]?.thumbnail || items[0]?.thumbnail,
+    highlights: target.highlights,
+    items
+  };
+};
+
+const resolveDirectInstagramCollection = async (url) => {
+  if (isInstagramStoriesUsernameUrl(url)) {
+    return resolveInstagramStories(url);
+  }
+
+  if (isInstagramHighlightsUsernameUrl(url)) {
+    return resolveInstagramHighlightsMedia(url);
+  }
+
+  return null;
 };
 
 const secondsToDuration = (seconds) => {
@@ -302,22 +406,44 @@ const runYtdlpWithFallbacks = async ({ url, platform, options }) => {
 };
 
 export const fetchMediaInfo = async ({ url, platform }) => {
-  if (isInstagramHighlightsUsernameUrl(url)) {
-    const { username, highlights } = await resolveInstagramHighlights(url);
+  if (isInstagramStoriesUsernameUrl(url)) {
+    const target = await resolveInstagramStories(url);
 
     return {
-      id: username,
+      id: target.username,
       url,
       platform,
-      title: `${username} Instagram highlights`,
-      thumbnail: highlights[0]?.thumbnail,
+      title: target.title,
+      thumbnail: target.thumbnail,
       duration: null,
       durationText: 'Multiple items',
-      uploader: username,
-      webpageUrl: `https://www.instagram.com/${username}/`,
+      uploader: target.username,
+      webpageUrl: `https://www.instagram.com/${target.username}/`,
+      isShortForm: true,
+      isCollection: true,
+      entryCount: target.items.length,
+      qualities: [{ label: 'Best available', value: 'best' }],
+      hasSubtitles: false,
+      automaticCaptions: false
+    };
+  }
+
+  if (isInstagramHighlightsUsernameUrl(url)) {
+    const target = await resolveInstagramHighlightsMedia(url);
+
+    return {
+      id: target.username,
+      url,
+      platform,
+      title: target.title,
+      thumbnail: target.thumbnail,
+      duration: null,
+      durationText: 'Multiple items',
+      uploader: target.username,
+      webpageUrl: `https://www.instagram.com/${target.username}/`,
       isShortForm: false,
       isCollection: true,
-      entryCount: highlights.length,
+      entryCount: target.items.length,
       qualities: [{ label: 'Best available', value: 'best' }],
       hasSubtitles: false,
       automaticCaptions: false
@@ -459,13 +585,30 @@ const writeZip = async ({ files, outputPath }) => {
   await fs.writeFile(outputPath, Buffer.concat([...localParts, ...centralParts, endHeader]));
 };
 
+const downloadDirectInstagramItems = async ({ items, fileBase }) => {
+  const headers = await instagramHeaders();
+
+  return Promise.all(items.map(async (item, index) => {
+    const fileName = `${fileBase}-${String(index + 1).padStart(3, '0')}-${sanitize(item.id || 'instagram')}.${item.extension}`;
+    const filePath = path.join(downloadsDir, fileName);
+    const response = await fetch(item.url, { headers });
+
+    if (!response.ok) {
+      const error = new Error(`Instagram media returned ${response.status}`);
+      error.publicMessage = 'Instagram returned the story list, but blocked one of the media files during download. Refresh the cookies and try again.';
+      throw error;
+    }
+
+    await fs.writeFile(filePath, Buffer.from(await response.arrayBuffer()));
+    return fileName;
+  }));
+};
+
 export const createDownload = async ({ url, platform, type, quality, format = 'mp4', title }) => {
   const videoFormat = ['mp4', 'webm', 'mkv'].includes(format) ? format : 'mp4';
   const isCollection = isInstagramCollectionUrl(url);
-  const highlightsTarget = isInstagramHighlightsUsernameUrl(url)
-    ? await resolveInstagramHighlights(url)
-    : null;
-  const collectionUrls = highlightsTarget?.urls || [url];
+  const directInstagramTarget = await resolveDirectInstagramCollection(url);
+  const collectionUrls = [url];
   let extension = videoFormat;
   let ytdlpOptions = {};
 
@@ -513,18 +656,23 @@ export const createDownload = async ({ url, platform, type, quality, format = 'm
     ? path.join(downloadsDir, `${fileBase}-%(playlist_index)03d-%(id)s.%(ext)s`)
     : path.join(downloadsDir, requestedFileName);
 
-  for (const [index, collectionUrl] of collectionUrls.entries()) {
-    await runYtdlpWithFallbacks({
-      url: collectionUrl,
-      platform,
-      options: {
-        ...ytdlpOptions,
-        ...(isCollection ? { allowPlaylist: true } : {}),
-        output: collectionUrls.length > 1
-          ? path.join(downloadsDir, `${fileBase}-${String(index + 1).padStart(2, '0')}-%(playlist_index)03d-%(id)s.%(ext)s`)
-          : outputTemplate
-      }
+  if (directInstagramTarget) {
+    await downloadDirectInstagramItems({
+      items: directInstagramTarget.items,
+      fileBase
     });
+  } else {
+    for (const collectionUrl of collectionUrls) {
+      await runYtdlpWithFallbacks({
+        url: collectionUrl,
+        platform,
+        options: {
+          ...ytdlpOptions,
+          ...(isCollection ? { allowPlaylist: true } : {}),
+          output: outputTemplate
+        }
+      });
+    }
   }
 
   const files = await fs.readdir(downloadsDir);
