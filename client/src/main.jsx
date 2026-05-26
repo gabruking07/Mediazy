@@ -8,12 +8,17 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
     <Toaster
-      position="top-center"
+      gutter={12}
+      position="top-right"
       toastOptions={{
+        duration: 4200,
         style: {
+          padding: 0,
           background: '#101826',
-          border: '1px solid rgba(255,255,255,0.14)',
-          color: '#eef6ff'
+          border: '0',
+          boxShadow: 'none',
+          color: '#eef6ff',
+          maxWidth: 'min(92vw, 420px)'
         }
       }}
     />

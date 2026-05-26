@@ -7,21 +7,12 @@ export default function UrlForm({
   onSubmit,
   loading,
   selectedPlatform,
-  isPlatformUrl,
-  onInvalidPlatformUrl,
   onPasteUnavailable
 }) {
   const inputRef = useRef(null);
   const platformName = selectedPlatform.label;
 
   const setPlatformUrl = (text) => {
-    const nextUrl = text.trim();
-
-    if (nextUrl && !isPlatformUrl(nextUrl)) {
-      onInvalidPlatformUrl();
-      return false;
-    }
-
     setUrl(text);
     return true;
   };

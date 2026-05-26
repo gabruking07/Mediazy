@@ -30,9 +30,9 @@ export const fetchVideoInfo = async (url) => {
   }
 };
 
-export const requestDownload = async ({ url, type, quality }) => {
+export const requestDownload = async ({ url, type, quality, format }) => {
   try {
-    const { data } = await api.post('/api/download', { url, type, quality });
+    const { data } = await api.post('/api/download', { url, type, quality, format });
     return data;
   } catch (error) {
     throw new Error(getMessage(error));

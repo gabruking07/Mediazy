@@ -5,7 +5,15 @@
 :root {
   color-scheme: dark;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #070b12;
+  --page-bg: #070b12;
+  --page-bg-image:
+    radial-gradient(circle at 20% 15%, rgba(41, 211, 164, 0.22), transparent 24rem),
+    radial-gradient(circle at 82% 8%, rgba(84, 167, 255, 0.18), transparent 24rem),
+    linear-gradient(135deg, #070b12 0%, #101826 48%, #0a111d 100%);
+  --glass-bg: rgba(13, 20, 33, 0.74);
+  --glass-border: rgba(255, 255, 255, 0.13);
+  --glass-shadow: rgba(0, 0, 0, 0.28);
+  background: var(--page-bg);
   width: 100%;
   overflow-x: hidden;
 }
@@ -20,15 +28,15 @@ body {
   min-height: 100vh;
   width: 100%;
   overflow-x: hidden;
-  background:
-    radial-gradient(circle at 20% 15%, rgba(41, 211, 164, 0.22), transparent 24rem),
-    radial-gradient(circle at 82% 8%, rgba(84, 167, 255, 0.18), transparent 24rem),
-    linear-gradient(135deg, #070b12 0%, #101826 48%, #0a111d 100%);
+  background: var(--page-bg-image);
+  background-attachment: fixed;
+  color: #f8fafc;
 }
 
 #root {
   width: 100%;
   max-width: 100vw;
+  min-height: 100vh;
   overflow-x: hidden;
 }
 
@@ -46,10 +54,76 @@ select {
 }
 
 .glass {
-  background: rgba(13, 20, 33, 0.74);
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 24px 80px var(--glass-shadow);
   backdrop-filter: blur(18px);
+}
+
+.mediazy-toast {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: start;
+  width: min(92vw, 420px);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 18px;
+  background: rgba(10, 17, 29, 0.94);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.34);
+  padding: 14px;
+  color: #eef6ff;
+  backdrop-filter: blur(18px);
+}
+
+.mediazy-toast__icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 12px;
+}
+
+.mediazy-toast--success .mediazy-toast__icon {
+  background: rgba(41, 211, 164, 0.18);
+  color: #29d3a4;
+}
+
+.mediazy-toast--error .mediazy-toast__icon {
+  background: rgba(255, 107, 74, 0.16);
+  color: #ff8a72;
+}
+
+.mediazy-toast__title {
+  margin: 0;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.mediazy-toast__message {
+  margin: 4px 0 0;
+  color: #cbd5e1;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.mediazy-toast__close {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: color 160ms ease, background 160ms ease;
+}
+
+.mediazy-toast__close:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
 }
 
 .progress-stripe {

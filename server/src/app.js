@@ -29,11 +29,21 @@ const allowedOrigins = [
   .map((origin) => origin.replace(/\/$/, ''))
   .filter(Boolean);
 
+const isDevelopmentOrigin = (origin = '') => {
+  if (process.env.NODE_ENV === 'production') return false;
+
+  return /^http:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])(:\d+)?$/i.test(origin) ||
+    /^http:\/\/10\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?$/i.test(origin) ||
+    /^http:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}(:\d+)?$/i.test(origin) ||
+    /^http:\/\/192\.168\.\d{1,3}\.\d{1,3}(:\d+)?$/i.test(origin);
+};
+
 const isAllowedOrigin = (origin = '') => {
   const normalizedOrigin = origin.replace(/\/$/, '');
 
   return (
     allowedOrigins.includes(normalizedOrigin) ||
+    isDevelopmentOrigin(normalizedOrigin) ||
     /^https:\/\/[\w-]+\.vercel\.app$/i.test(normalizedOrigin)
   );
 };

@@ -1,10 +1,29 @@
 const platformMatchers = [
   { platform: 'Instagram', regex: /(^|\.)instagram\.com$/i },
+  { platform: 'YouTube', regex: /(^|\.)((youtube\.com)|(youtu\.be))$/i },
   { platform: 'Facebook', regex: /(^|\.)((facebook\.com)|(fb\.watch))$/i },
   { platform: 'TikTok', regex: /(^|\.)tiktok\.com$/i },
   { platform: 'Twitter/X', regex: /(^|\.)(twitter\.com|x\.com)$/i },
   { platform: 'Video', regex: /.+/ }
 ];
+
+const getInstagramPlatform = (parsed) => {
+  const pathname = parsed.pathname.toLowerCase();
+
+  if (parsed.searchParams.get('mediazy') === 'highlights') {
+    return 'Instagram Highlights';
+  }
+
+  if (pathname.startsWith('/stories/highlights/')) {
+    return 'Instagram Highlights';
+  }
+
+  if (pathname.startsWith('/stories/')) {
+    return 'Instagram Stories';
+  }
+
+  return 'Instagram';
+};
 
 export const parseSupportedUrl = (value) => {
   let parsed;
@@ -25,10 +44,11 @@ export const parseSupportedUrl = (value) => {
 
   const hostname = parsed.hostname.replace(/^www\./i, '');
   const match = platformMatchers.find((item) => item.regex.test(hostname));
+  const platform = match.platform === 'Instagram' ? getInstagramPlatform(parsed) : match.platform;
 
   return {
     normalizedUrl: parsed.toString(),
-    platform: match.platform,
+    platform,
     hostname
   };
 };

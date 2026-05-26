@@ -23,6 +23,10 @@ const downloadHistorySchema = new mongoose.Schema({
     type: String,
     default: 'best'
   },
+  format: {
+    type: String,
+    default: 'mp4'
+  },
   fileName: String,
   fileSize: Number,
   user: {

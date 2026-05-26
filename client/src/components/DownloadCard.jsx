@@ -8,6 +8,8 @@ export default function DownloadCard({
   setQuality,
   type,
   setType,
+  videoFormat,
+  setVideoFormat,
   onDownload,
   downloading,
   progress,
@@ -37,6 +39,11 @@ export default function DownloadCard({
                 Reel / Short
               </span>
             )}
+            {info.isCollection && (
+              <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-slate-300">
+                {info.entryCount} items
+              </span>
+            )}
             <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-slate-300">
               <Clock size={14} />
               {info.durationText}
@@ -48,7 +55,7 @@ export default function DownloadCard({
 
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="grid gap-2 text-sm font-semibold text-slate-300">
-            Format
+            Download type
             <select
               className="h-12 rounded-xl border border-white/10 bg-slate-950 px-4 text-white outline-none focus:border-brand/70"
               value={type}
@@ -61,6 +68,22 @@ export default function DownloadCard({
             </select>
           </label>
 
+          <label className="grid gap-2 text-sm font-semibold text-slate-300">
+            Video format
+            <select
+              className="h-12 rounded-xl border border-white/10 bg-slate-950 px-4 text-white outline-none focus:border-brand/70 disabled:opacity-50"
+              value={videoFormat}
+              disabled={type !== 'video'}
+              onChange={(event) => setVideoFormat(event.target.value)}
+            >
+              <option value="mp4">MP4 video</option>
+              <option value="webm">WebM video</option>
+              <option value="mkv">MKV video</option>
+            </select>
+          </label>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
           <label className="grid gap-2 text-sm font-semibold text-slate-300">
             Quality
             <select

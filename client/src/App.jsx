@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { BadgeCheck, Clipboard, Download, Link2, LockKeyhole, Mail, MessageCircle, Send, Sparkles, Smartphone } from 'lucide-react';
+import { AtSign, BadgeCheck, CheckCircle2, Clipboard, Download, Images, Link2, LockKeyhole, Mail, MessageCircle, Send, Sparkles, Smartphone, X, XCircle } from 'lucide-react';
 import {
   fetchCurrentUser,
   fetchDownloadQuota,
@@ -28,6 +28,10 @@ const SUPPORTED_PLATFORMS = [
     hosts: ['instagram.com', 'www.instagram.com', 'm.instagram.com'],
   },
   {
+    label: 'YouTube',
+    hosts: ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be'],
+  },
+  {
     label: 'Facebook',
     hosts: ['facebook.com', 'www.facebook.com', 'm.facebook.com', 'fb.watch', 'web.facebook.com'],
   },
@@ -44,48 +48,73 @@ const SUPPORTED_PLATFORMS = [
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phonePattern = /^\+?[1-9]\d{9,14}$/;
 const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+const instagramUsernamePattern = /^[A-Za-z0-9._]{1,30}$/;
 const supportEmail = 'mediazy.xyz@gmail.com';
-const savedTheme = () => {
-  try {
-    return window.localStorage.getItem('mediazy_theme') || 'dark';
-  } catch {
-    return 'dark';
-  }
-};
 
 function refreshGuestAds() {
   window.MediazyAds?.refresh?.();
 }
 
-function isUrlForPlatform(value, platform) {
+function detectPlatform(value) {
   try {
     const { hostname } = new URL(value);
     const cleanHost = hostname.toLowerCase().replace(/^www\./, '');
 
-    if (platform.acceptsAnyVideo) {
-      return !SUPPORTED_PLATFORMS
-        .filter((item) => !item.acceptsAnyVideo)
-        .some((item) => item.hosts.some((host) => {
-          const cleanPlatformHost = host.replace(/^www\./, '');
-          return cleanHost === cleanPlatformHost || cleanHost.endsWith(`.${cleanPlatformHost}`);
-        }));
-    }
-
-    return platform.hosts.some((host) => {
-      const cleanPlatformHost = host.replace(/^www\./, '');
-      return cleanHost === cleanPlatformHost || cleanHost.endsWith(`.${cleanPlatformHost}`);
-    });
+    return SUPPORTED_PLATFORMS.find((platform) => (
+      !platform.acceptsAnyVideo &&
+      platform.hosts.some((host) => {
+        const cleanPlatformHost = host.replace(/^www\./, '');
+        return cleanHost === cleanPlatformHost || cleanHost.endsWith(`.${cleanPlatformHost}`);
+      })
+    )) || SUPPORTED_PLATFORMS[0];
   } catch {
-    return false;
+    return null;
   }
 }
+
+function NotificationToast({ id, type, title, message }) {
+  const isSuccess = type === 'success';
+  const Icon = isSuccess ? CheckCircle2 : XCircle;
+
+  return (
+    <div className={`mediazy-toast mediazy-toast--${type}`}>
+      <div className="mediazy-toast__icon">
+        <Icon size={20} />
+      </div>
+      <div className="min-w-0">
+        <p className="mediazy-toast__title">{title}</p>
+        {message && <p className="mediazy-toast__message">{message}</p>}
+      </div>
+      <button className="mediazy-toast__close" type="button" onClick={() => toast.dismiss(id)} aria-label="Dismiss notification">
+        <X size={15} />
+      </button>
+    </div>
+  );
+}
+
+const notify = ({ type = 'success', title, message, id }) => {
+  toast.custom(
+    (currentToast) => (
+      <NotificationToast
+        id={currentToast.id}
+        type={type}
+        title={title}
+        message={message}
+      />
+    ),
+    { id, duration: type === 'error' ? 5600 : 3800 }
+  );
+};
+
+const notifySuccess = (title, message, id) => notify({ type: 'success', title, message, id });
+const notifyError = (title, message, id) => notify({ type: 'error', title, message, id });
 
 function HowToUsePage({ user, quota, onStart }) {
   const steps = [
     {
       icon: Link2,
       title: 'Pick the platform',
-      copy: 'Choose Video, Instagram Reels, Facebook, TikTok, or Twitter/X before pasting your link.'
+      copy: 'Paste a link and Mediazy detects whether it is Video, YouTube, Instagram Reels, Facebook, TikTok, or Twitter/X.'
     },
     {
       icon: Clipboard,
@@ -129,12 +158,10 @@ function HowToUsePage({ user, quota, onStart }) {
       <div className="glass grid gap-3 rounded-2xl p-4 sm:p-5 md:grid-cols-[1fr_auto] md:items-center">
         <div className="min-w-0">
           <p className="text-base font-black text-white">
-            {user ? 'Your daily download counter is active.' : 'Guest downloads are available before login.'}
+            Unlimited downloads are available.
           </p>
           <p className="mt-1 text-sm leading-6 text-slate-400">
-            {quota
-              ? `${quota.available} of ${quota.limit} downloads remaining.`
-              : 'Your remaining downloads will appear once quota loads.'}
+            Paste, preview, choose your format, and download as many files as you need.
           </p>
         </div>
         <button
@@ -208,16 +235,104 @@ function ContactPage({ onStart }) {
   );
 }
 
+function InstagramStoriesPage({
+  storyUsername,
+  setStoryUsername,
+  onAnalyze,
+  loading,
+  storyCard,
+  highlightsCard,
+  storyError,
+  highlightsError
+}) {
+  return (
+    <section className="grid gap-5">
+      <div className="min-w-0">
+        <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/8 px-3 py-2 text-xs font-semibold text-slate-300">
+          <Images size={16} className="text-brand" />
+          Instagram story downloader
+        </p>
+        <h1 className="max-w-3xl break-words text-[2.25rem] font-black leading-none text-white sm:text-5xl">
+          Download stories and highlights.
+        </h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-lg sm:leading-8">
+          Enter one username to load active stories first, then highlights below.
+        </p>
+      </div>
+
+      <form className="glass grid gap-4 rounded-2xl p-3 sm:p-5" onSubmit={onAnalyze}>
+        <div className="grid gap-2 sm:grid-cols-[1fr_auto] sm:gap-4">
+          <label className="relative block min-w-0">
+            <AtSign className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 sm:left-4" size={19} />
+            <input
+              className="h-12 w-full rounded-xl border border-white/10 bg-white/8 pl-10 pr-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-brand/70 focus:bg-white/10 sm:h-14 sm:pl-12 sm:pr-4 sm:text-base"
+              placeholder="Instagram username"
+              value={storyUsername}
+              onChange={(event) => setStoryUsername(event.target.value)}
+            />
+          </label>
+          <button
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-bold text-ink transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-70 sm:h-14 sm:px-6 sm:text-base"
+            disabled={loading}
+            type="submit"
+          >
+            <Download size={18} />
+            Load profile
+          </button>
+        </div>
+      </form>
+
+      <div className="grid gap-4">
+        <div className="grid gap-3">
+          <h2 className="text-xl font-black text-white">Stories</h2>
+          {storyCard || (
+            <div className="rounded-2xl border border-white/10 bg-white/8 p-4 text-sm text-slate-400">
+              {storyError || 'Load a username to check active stories.'}
+            </div>
+          )}
+        </div>
+
+        <div className="grid gap-3">
+          <h2 className="text-xl font-black text-white">Highlights</h2>
+          {highlightsCard || (
+            <div className="rounded-2xl border border-white/10 bg-white/8 p-4 text-sm text-slate-400">
+              {highlightsError || 'Highlights appear here after the username is loaded.'}
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function App() {
   const [url, setUrl] = useState('');
   const [info, setInfo] = useState(null);
   const [quality, setQuality] = useState('best');
   const [type, setType] = useState('video');
+  const [videoFormat, setVideoFormat] = useState('mp4');
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState(null);
   const [selectedPlatform, setSelectedPlatform] = useState(SUPPORTED_PLATFORMS[0]);
+  const [storyUsername, setStoryUsername] = useState('');
+  const [storyInfo, setStoryInfo] = useState(null);
+  const [highlightsInfo, setHighlightsInfo] = useState(null);
+  const [storyError, setStoryError] = useState('');
+  const [highlightsError, setHighlightsError] = useState('');
+  const [storyQuality, setStoryQuality] = useState('best');
+  const [highlightsQuality, setHighlightsQuality] = useState('best');
+  const [storyType, setStoryType] = useState('video');
+  const [highlightsType, setHighlightsType] = useState('video');
+  const [storyVideoFormat, setStoryVideoFormat] = useState('mp4');
+  const [highlightsVideoFormat, setHighlightsVideoFormat] = useState('mp4');
+  const [storyResult, setStoryResult] = useState(null);
+  const [highlightsResult, setHighlightsResult] = useState(null);
+  const [storyDownloading, setStoryDownloading] = useState(false);
+  const [highlightsDownloading, setHighlightsDownloading] = useState(false);
+  const [storyProgress, setStoryProgress] = useState(0);
+  const [highlightsProgress, setHighlightsProgress] = useState(0);
   const [user, setUser] = useState(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
@@ -226,28 +341,25 @@ export default function App() {
   const [profileLoading, setProfileLoading] = useState(false);
   const [quota, setQuota] = useState(null);
   const [activePage, setActivePage] = useState('home');
-  const [theme, setTheme] = useState(savedTheme);
-
-  const isSelectedPlatformUrl = useMemo(
-    () => (value) => isUrlForPlatform(value, selectedPlatform),
-    [selectedPlatform],
-  );
-
-  const showPlatformError = () => {
-    toast.error(`Please paste a ${selectedPlatform.label} link.`);
-  };
 
   const showPasteUnavailable = () => {
-    toast.error('Browser blocked clipboard access. Paste with Ctrl+V in the link box.');
+    notifyError('Clipboard blocked', 'Paste with Ctrl+V in the link box.');
   };
+
+  const handleUrlChange = useCallback((value) => {
+    setUrl(value);
+    setInfo(null);
+    setResult(null);
+
+    const detectedPlatform = detectPlatform(value.trim());
+    if (detectedPlatform) {
+      setSelectedPlatform(detectedPlatform);
+    }
+  }, []);
 
   const navigateTo = (page) => {
     setActivePage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const toggleTheme = () => {
-    setTheme((current) => (current === 'dark' ? 'light' : 'dark'));
   };
 
   const loadQuota = async () => {
@@ -266,13 +378,24 @@ export default function App() {
   }, [downloading]);
 
   useEffect(() => {
-    document.documentElement.classList.toggle('theme-light', theme === 'light');
-    document.documentElement.style.colorScheme = theme;
+    if (!storyDownloading) return undefined;
 
-    try {
-      window.localStorage.setItem('mediazy_theme', theme);
-    } catch {}
-  }, [theme]);
+    const timer = window.setInterval(() => {
+      setStoryProgress((current) => (current >= 92 ? current : current + Math.ceil(Math.random() * 8)));
+    }, 700);
+
+    return () => window.clearInterval(timer);
+  }, [storyDownloading]);
+
+  useEffect(() => {
+    if (!highlightsDownloading) return undefined;
+
+    const timer = window.setInterval(() => {
+      setHighlightsProgress((current) => (current >= 92 ? current : current + Math.ceil(Math.random() * 8)));
+    }, 700);
+
+    return () => window.clearInterval(timer);
+  }, [highlightsDownloading]);
 
   useEffect(() => {
     let mounted = true;
@@ -311,13 +434,13 @@ export default function App() {
     event.preventDefault();
 
     if (!url.trim()) {
-      toast.error('Paste a video link first.');
+      notifyError('Link needed', 'Paste a video link first.');
       return;
     }
 
-    if (!isSelectedPlatformUrl(url.trim())) {
-      showPlatformError();
-      return;
+    const detectedPlatform = detectPlatform(url.trim());
+    if (detectedPlatform) {
+      setSelectedPlatform(detectedPlatform);
     }
 
     setLoading(true);
@@ -327,12 +450,118 @@ export default function App() {
       const data = await fetchVideoInfo(url.trim());
       setInfo(data);
       setQuality('best');
-      toast.success('Video details loaded.');
+      setVideoFormat('mp4');
+      const detectedInfoPlatform = SUPPORTED_PLATFORMS.find((platform) => (
+        platform.label === data.platform || platform.label.startsWith(data.platform)
+      ));
+      if (detectedInfoPlatform) {
+        setSelectedPlatform(detectedInfoPlatform);
+      }
+      notifySuccess('Video details loaded', 'Choose your format and quality, then download.');
     } catch (error) {
       setInfo(null);
-      toast.error(error.message);
+      notifyError('Could not load video', error.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleInstagramUsernameAnalyze = async (event) => {
+    event.preventDefault();
+
+    const username = storyUsername.trim().replace(/^@/, '');
+
+    if (!instagramUsernamePattern.test(username)) {
+      notifyError('Username needed', 'Enter a valid Instagram username.');
+      return;
+    }
+
+    const storyUrl = `https://www.instagram.com/stories/${username}/`;
+    const highlightsUrl = `https://www.instagram.com/${username}/?mediazy=highlights`;
+
+    setLoading(true);
+    setStoryResult(null);
+    setHighlightsResult(null);
+    setStoryInfo(null);
+    setHighlightsInfo(null);
+    setStoryError('');
+    setHighlightsError('');
+    setUrl(storyUrl);
+    setSelectedPlatform(SUPPORTED_PLATFORMS.find((platform) => platform.label === 'Instagram Reels') || SUPPORTED_PLATFORMS[0]);
+
+    const [storyResponse, highlightsResponse] = await Promise.allSettled([
+      fetchVideoInfo(storyUrl),
+      fetchVideoInfo(highlightsUrl)
+    ]);
+
+    const storyLoaded = storyResponse.status === 'fulfilled';
+    const highlightsLoaded = highlightsResponse.status === 'fulfilled';
+
+    if (storyLoaded) {
+      setStoryInfo(storyResponse.value);
+      setStoryQuality('best');
+      setStoryType('video');
+      setStoryVideoFormat('mp4');
+    } else {
+      setStoryError('Stories could not be loaded. Instagram often requires a logged-in server session even for public profiles.');
+    }
+
+    if (highlightsLoaded) {
+      setHighlightsInfo(highlightsResponse.value);
+      setHighlightsQuality('best');
+      setHighlightsType('video');
+      setHighlightsVideoFormat('mp4');
+    } else {
+      setHighlightsError('Highlights could not be loaded. Instagram often requires a logged-in server session even for public profiles.');
+    }
+
+    if (storyLoaded && highlightsLoaded) {
+      notifySuccess('Instagram profile loaded', 'Stories and highlights are ready below.', 'instagram-profile');
+    } else if (storyLoaded || highlightsLoaded) {
+      notifySuccess(
+        'Instagram profile partially loaded',
+        storyLoaded
+          ? 'Stories are ready. Highlights need a logged-in server session.'
+          : 'Highlights are ready. Stories need a logged-in server session.',
+        'instagram-profile'
+      );
+    }
+
+    setLoading(false);
+  };
+
+  const handleInstagramDownload = async ({
+    info: targetInfo,
+    type: targetType,
+    quality: targetQuality,
+    videoFormat: targetVideoFormat,
+    setTargetResult,
+    setTargetDownloading,
+    setTargetProgress
+  }) => {
+    if (!targetInfo) return;
+
+    setTargetDownloading(true);
+    setTargetResult(null);
+    setTargetProgress(8);
+
+    try {
+      const data = await requestDownload({
+        url: targetInfo.url,
+        type: targetType,
+        quality: targetQuality,
+        format: targetVideoFormat
+      });
+      setTargetProgress(100);
+      setTargetResult(data);
+      notifySuccess('File ready', 'Save it to your device.');
+    } catch (error) {
+      notifyError('Download failed', error.message);
+    } finally {
+      window.setTimeout(() => {
+        setTargetDownloading(false);
+        setTargetProgress(0);
+      }, 600);
     }
   };
 
@@ -344,19 +573,19 @@ export default function App() {
     setProgress(8);
 
     try {
-      const data = await requestDownload({ url: info.url, type, quality });
+      const data = await requestDownload({ url: info.url, type, quality, format: videoFormat });
       setProgress(100);
       setResult(data);
       if (data.quota) {
         setQuota(data.quota);
       }
-      toast.success('Your file is ready.');
+      notifySuccess('File ready', 'Save it to your device.');
     } catch (error) {
       if (/log in|login|required/i.test(error.message)) {
         setAuthMode('login');
         setAuthOpen(true);
       }
-      toast.error(error.message);
+      notifyError('Download failed', error.message);
     } finally {
       window.setTimeout(() => {
         setDownloading(false);
@@ -374,32 +603,32 @@ export default function App() {
     const password = form.password;
 
     if (!password) {
-      toast.error('Enter your password.');
+      notifyError('Password needed', 'Enter your password.');
       return;
     }
 
     if (authMode === 'signup') {
       if (!emailPattern.test(email)) {
-        toast.error('Enter a valid email address.');
+        notifyError('Invalid email', 'Enter a valid email address.');
         return;
       }
 
       if (name.length < 2 || name.length > 80) {
-        toast.error('Name must be between 2 and 80 characters.');
+        notifyError('Invalid name', 'Name must be between 2 and 80 characters.');
         return;
       }
 
       if (!phonePattern.test(phone)) {
-        toast.error('Enter a valid phone number with 10 to 15 digits.');
+        notifyError('Invalid phone', 'Enter a valid phone number with 10 to 15 digits.');
         return;
       }
 
       if (!passwordPattern.test(password)) {
-        toast.error('Password must be at least 8 characters and include a letter and a number.');
+        notifyError('Weak password', 'Password must be at least 8 characters and include a letter and a number.');
         return;
       }
     } else if (!emailPattern.test(identifier) && !phonePattern.test(loginPhone)) {
-      toast.error('Enter a valid email or phone number.');
+      notifyError('Invalid login', 'Enter a valid email or phone number.');
       return;
     }
 
@@ -415,9 +644,9 @@ export default function App() {
       setUser(data.user);
       setAuthOpen(false);
       await loadQuota();
-      toast.success(authMode === 'signup' ? 'Account created.' : 'Logged in.');
+      notifySuccess(authMode === 'signup' ? 'Account created' : 'Logged in');
     } catch (error) {
-      toast.error(error.message);
+      notifyError('Authentication failed', error.message);
     } finally {
       setAuthLoading(false);
     }
@@ -430,7 +659,7 @@ export default function App() {
     setResult(null);
     refreshGuestAds();
     loadQuota().catch(() => {});
-    toast.success('Logged out.');
+    notifySuccess('Logged out');
   };
 
   const handleProfileSubmit = async (form) => {
@@ -440,22 +669,22 @@ export default function App() {
     const newPassword = form.newPassword;
 
     if (name.length < 2 || name.length > 80) {
-      toast.error('Name must be between 2 and 80 characters.');
+      notifyError('Invalid name', 'Name must be between 2 and 80 characters.');
       return;
     }
 
     if (!emailPattern.test(email)) {
-      toast.error('Enter a valid email address.');
+      notifyError('Invalid email', 'Enter a valid email address.');
       return;
     }
 
     if ((email !== user.email || newPassword) && !currentPassword) {
-      toast.error('Enter your current password to change email or password.');
+      notifyError('Current password needed', 'Enter your current password to change email or password.');
       return;
     }
 
     if (newPassword && !passwordPattern.test(newPassword)) {
-      toast.error('New password must be at least 8 characters and include a letter and a number.');
+      notifyError('Weak password', 'New password must be at least 8 characters and include a letter and a number.');
       return;
     }
 
@@ -467,9 +696,9 @@ export default function App() {
       refreshGuestAds();
       setUser(data.user);
       setProfileOpen(false);
-      toast.success('Profile updated. Notification sent to your email.');
+      notifySuccess('Profile updated', 'Notification sent to your email.');
     } catch (error) {
-      toast.error(error.message);
+      notifyError('Profile update failed', error.message);
     } finally {
       setProfileLoading(false);
     }
@@ -481,9 +710,7 @@ export default function App() {
         user={user}
         quota={quota}
         activePage={activePage}
-        theme={theme}
         onNavigate={navigateTo}
-        onThemeToggle={toggleTheme}
         onAuthClick={() => {
           setAuthMode('login');
           setAuthOpen(true);
@@ -499,6 +726,63 @@ export default function App() {
 
         {activePage === 'contact' && (
           <ContactPage onStart={() => navigateTo('home')} />
+        )}
+
+        {activePage === 'stories' && (
+          <InstagramStoriesPage
+            storyUsername={storyUsername}
+            setStoryUsername={setStoryUsername}
+            onAnalyze={handleInstagramUsernameAnalyze}
+            loading={loading}
+            storyError={storyError}
+            highlightsError={highlightsError}
+            storyCard={storyInfo && (
+              <DownloadCard
+                info={storyInfo}
+                quality={storyQuality}
+                setQuality={setStoryQuality}
+                type={storyType}
+                setType={setStoryType}
+                videoFormat={storyVideoFormat}
+                setVideoFormat={setStoryVideoFormat}
+                onDownload={() => handleInstagramDownload({
+                  info: storyInfo,
+                  type: storyType,
+                  quality: storyQuality,
+                  videoFormat: storyVideoFormat,
+                  setTargetResult: setStoryResult,
+                  setTargetDownloading: setStoryDownloading,
+                  setTargetProgress: setStoryProgress
+                })}
+                downloading={storyDownloading}
+                progress={storyProgress}
+                result={storyResult}
+              />
+            )}
+            highlightsCard={highlightsInfo && (
+              <DownloadCard
+                info={highlightsInfo}
+                quality={highlightsQuality}
+                setQuality={setHighlightsQuality}
+                type={highlightsType}
+                setType={setHighlightsType}
+                videoFormat={highlightsVideoFormat}
+                setVideoFormat={setHighlightsVideoFormat}
+                onDownload={() => handleInstagramDownload({
+                  info: highlightsInfo,
+                  type: highlightsType,
+                  quality: highlightsQuality,
+                  videoFormat: highlightsVideoFormat,
+                  setTargetResult: setHighlightsResult,
+                  setTargetDownloading: setHighlightsDownloading,
+                  setTargetProgress: setHighlightsProgress
+                })}
+                downloading={highlightsDownloading}
+                progress={highlightsProgress}
+                result={highlightsResult}
+              />
+            )}
+          />
         )}
 
         {activePage === 'home' && (
@@ -517,30 +801,9 @@ export default function App() {
             </p>
             {!user && quota && quota.used >= 8 && (
               <div className="mt-4 max-w-2xl rounded-xl border border-brand/30 bg-brand/10 p-3 text-sm font-semibold leading-6 text-slate-100">
-                You have {quota.available} guest downloads left. Login to keep downloading and remove ads.
+                Unlimited guest downloads are enabled. Login is optional.
               </div>
             )}
-            <div className="-mx-3 mt-4 flex min-w-0 gap-2 overflow-x-auto px-3 pb-1 sm:mx-0 sm:mt-6 sm:flex-wrap sm:overflow-visible sm:px-0">
-              {SUPPORTED_PLATFORMS.map((platform) => (
-                <button
-                  className={`shrink-0 rounded-full border px-3 py-2 text-sm transition sm:shrink sm:py-1 ${
-                    selectedPlatform.label === platform.label
-                      ? 'border-brand/70 bg-brand/15 text-white'
-                      : 'border-white/10 bg-white/8 text-slate-300 hover:border-brand/50 hover:text-white'
-                  }`}
-                  key={platform.label}
-                  type="button"
-                  onClick={() => {
-                    setSelectedPlatform(platform);
-                    setUrl('');
-                    setInfo(null);
-                    setResult(null);
-                  }}
-                >
-                  {platform.label}
-                </button>
-              ))}
-            </div>
           </div>
 
           <div className="glass grid min-w-0 gap-2 rounded-2xl p-3 sm:gap-4 sm:p-5">
@@ -549,11 +812,9 @@ export default function App() {
                 <LockKeyhole size={19} />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-bold text-white sm:text-base">10 guest downloads</p>
+                <p className="text-sm font-bold text-white sm:text-base">Unlimited downloads</p>
                 <p className="mt-1 text-xs leading-5 text-slate-400 sm:text-sm sm:leading-6">
-                  {user || !quota
-                    ? 'Try downloads without an account. After 10 files, login is required.'
-                    : `${quota.available} of ${quota.limit} guest downloads left before login is required.`}
+                  Download without daily or guest limits. Login is only needed for account features.
                 </p>
               </div>
             </div>
@@ -562,9 +823,9 @@ export default function App() {
                 <BadgeCheck size={19} />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-bold text-white sm:text-base">Choose a link type first</p>
+                <p className="text-sm font-bold text-white sm:text-base">Automatic platform detection</p>
                 <p className="mt-1 text-xs leading-5 text-slate-400 sm:text-sm sm:leading-6">
-                  Video accepts regular video links, while social apps use their own buttons.
+                  Paste the URL and Mediazy selects the matching platform for you.
                 </p>
               </div>
             </div>
@@ -584,14 +845,29 @@ export default function App() {
 
         <UrlForm
           url={url}
-          setUrl={setUrl}
+          setUrl={handleUrlChange}
           onSubmit={handleAnalyze}
           loading={loading}
           selectedPlatform={selectedPlatform}
-          isPlatformUrl={isSelectedPlatformUrl}
-          onInvalidPlatformUrl={showPlatformError}
           onPasteUnavailable={showPasteUnavailable}
         />
+
+        <div className="-mx-3 flex min-w-0 gap-2 overflow-x-auto px-3 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
+          {SUPPORTED_PLATFORMS.map((platform) => (
+            <button
+              className={`shrink-0 rounded-full border px-3 py-2 text-sm transition sm:shrink sm:py-1 ${
+                selectedPlatform.label === platform.label
+                  ? 'border-brand/70 bg-brand/15 text-white'
+                  : 'border-white/10 bg-white/8 text-slate-300 hover:border-brand/50 hover:text-white'
+              }`}
+              key={platform.label}
+              type="button"
+              onClick={() => setSelectedPlatform(platform)}
+            >
+              {platform.label}
+            </button>
+          ))}
+        </div>
 
         <DownloadCard
           info={info}
@@ -599,6 +875,8 @@ export default function App() {
           setQuality={setQuality}
           type={type}
           setType={setType}
+          videoFormat={videoFormat}
+          setVideoFormat={setVideoFormat}
           onDownload={handleDownload}
           downloading={downloading}
           progress={progress}

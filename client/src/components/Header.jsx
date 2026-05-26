@@ -1,7 +1,8 @@
-import { DownloadCloud, HelpCircle, Home, LogOut, Mail, Moon, Sun, UserRound } from 'lucide-react';
+import { DownloadCloud, HelpCircle, Home, Instagram, LogOut, Mail, UserRound } from 'lucide-react';
 
 const navItems = [
   { id: 'home', label: 'Home', icon: Home },
+  { id: 'stories', label: 'Stories', icon: Instagram },
   { id: 'how-to-use', label: 'How to use', icon: HelpCircle },
   { id: 'contact', label: 'Contact us', icon: Mail }
 ];
@@ -10,9 +11,7 @@ export default function Header({
   user,
   quota,
   activePage,
-  theme,
   onNavigate,
-  onThemeToggle,
   onAuthClick,
   onLogout,
   onProfileClick
@@ -33,7 +32,7 @@ export default function Header({
           <div className="flex min-w-0 shrink-0 items-center justify-end gap-2 md:max-w-[620px] md:flex-wrap md:gap-3">
             {quota && (
               <div className="rounded-lg border border-white/10 bg-white/8 px-2 py-2 text-center text-[11px] font-semibold text-slate-300 sm:px-3 sm:text-left sm:text-xs">
-                Today: <span className="text-brand">{quota.available}</span> left
+                <span className="text-brand">Unlimited</span> downloads
               </div>
             )}
             <button
@@ -59,7 +58,7 @@ export default function Header({
           <div className="flex shrink-0 items-center justify-end gap-2">
             {quota && (
               <div className="rounded-lg border border-white/10 bg-white/8 px-2 py-2 text-[11px] font-semibold text-slate-300 sm:px-3 sm:text-xs">
-                Guest: <span className="text-brand">{quota.available}</span> left
+                <span className="text-brand">Unlimited</span> downloads
               </div>
             )}
             <button
@@ -89,15 +88,6 @@ export default function Header({
             {label}
           </button>
         ))}
-        <button
-          className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/8 px-3 text-sm font-semibold text-slate-300 transition hover:border-brand/50 hover:text-white"
-          type="button"
-          onClick={onThemeToggle}
-          aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
-        >
-          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-          {theme === 'dark' ? 'Light' : 'Dark'}
-        </button>
       </nav>
     </header>
   );
