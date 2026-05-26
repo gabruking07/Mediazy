@@ -346,7 +346,14 @@ function InstagramStoriesPage({
   );
 }
 
-export default function App() {
+const pagePaths = {
+  home: '/',
+  stories: '/instagram-story-downloader',
+  'how-to-use': '/how-to-use',
+  contact: '/contact'
+};
+
+export default function App({ initialPage = 'home' }) {
   const [url, setUrl] = useState('');
   const [info, setInfo] = useState(null);
   const [quality, setQuality] = useState('best');
@@ -397,7 +404,7 @@ export default function App() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
   const [quota, setQuota] = useState(null);
-  const [activePage, setActivePage] = useState('home');
+  const [activePage, setActivePage] = useState(initialPage);
 
   const showPasteUnavailable = () => {
     notifyError('Clipboard blocked', 'Paste with Ctrl+V in the link box.');
@@ -416,6 +423,7 @@ export default function App() {
 
   const navigateTo = (page) => {
     setActivePage(page);
+    window.history.pushState({}, '', pagePaths[page] || '/');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

@@ -1,7 +1,14 @@
-'use client';
+import AppClient from './AppClient.jsx';
+import SeoLandingContent from './SeoLandingContent.jsx';
+import { metadataForPage, seoPages } from './seo.js';
 
-import App from '../src/App.jsx';
+export const metadata = metadataForPage(seoPages.home);
 
 export default function Page() {
-  return <App />;
+  return (
+    <>
+      <AppClient seoPage={seoPages.home} />
+      <SeoLandingContent page={seoPages.home} />
+    </>
+  );
 }

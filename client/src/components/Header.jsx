@@ -1,10 +1,10 @@
 import { DownloadCloud, HelpCircle, Home, Instagram, LogOut, Mail, UserRound } from 'lucide-react';
 
 const navItems = [
-  { id: 'home', label: 'Home', icon: Home },
-  { id: 'stories', label: 'Stories', icon: Instagram },
-  { id: 'how-to-use', label: 'How to use', icon: HelpCircle },
-  { id: 'contact', label: 'Contact us', icon: Mail }
+  { id: 'home', label: 'Home', icon: Home, href: '/' },
+  { id: 'stories', label: 'Stories', icon: Instagram, href: '/instagram-story-downloader' },
+  { id: 'how-to-use', label: 'How to use', icon: HelpCircle, href: '/how-to-use' },
+  { id: 'contact', label: 'Contact us', icon: Mail, href: '/contact' }
 ];
 
 export default function Header({
@@ -19,7 +19,10 @@ export default function Header({
   return (
     <header className="sticky top-0 z-30 mx-auto flex w-full max-w-6xl flex-col gap-3 border-b border-white/10 bg-slate-950/90 px-3 py-3 backdrop-blur-xl sm:px-5 md:static md:border-b-0 md:bg-transparent md:py-6 md:backdrop-blur-0">
       <div className="flex w-full min-w-0 flex-row items-center justify-between gap-3">
-        <button className="flex min-w-0 items-center gap-3 text-left" type="button" onClick={() => onNavigate('home')}>
+        <a className="flex min-w-0 items-center gap-3 text-left" href="/" onClick={(event) => {
+          event.preventDefault();
+          onNavigate('home');
+        }}>
           <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand text-ink shadow-glow sm:h-10 sm:w-10">
             <DownloadCloud size={20} strokeWidth={2.5} />
           </div>
@@ -27,7 +30,7 @@ export default function Header({
             <p className="truncate text-lg font-black tracking-wide text-white sm:text-xl">Mediazy</p>
             <p className="truncate text-[10px] uppercase tracking-[0.22em] text-slate-400 sm:text-xs sm:tracking-[0.32em]">Downloader</p>
           </div>
-        </button>
+        </a>
         {user ? (
           <div className="flex min-w-0 shrink-0 items-center justify-end gap-2 md:max-w-[620px] md:flex-wrap md:gap-3">
             {quota && (
@@ -73,20 +76,23 @@ export default function Header({
         )}
       </div>
       <nav className="-mx-3 flex w-[calc(100%+1.5rem)] min-w-0 gap-2 overflow-x-auto px-3 pb-1 sm:mx-0 sm:w-full sm:px-0">
-        {navItems.map(({ id, label, icon: Icon }) => (
-          <button
+        {navItems.map(({ id, label, icon: Icon, href }) => (
+          <a
             className={`inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg border px-3 text-sm font-semibold transition ${
               activePage === id
                 ? 'border-brand/60 bg-brand/15 text-white'
                 : 'border-white/10 bg-white/8 text-slate-300 hover:border-brand/50 hover:text-white'
             }`}
+            href={href}
             key={id}
-            type="button"
-            onClick={() => onNavigate(id)}
+            onClick={(event) => {
+              event.preventDefault();
+              onNavigate(id);
+            }}
           >
             <Icon size={16} />
             {label}
-          </button>
+          </a>
         ))}
       </nav>
     </header>
