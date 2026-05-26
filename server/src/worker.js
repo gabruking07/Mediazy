@@ -1,16 +1,9 @@
-import app from './app.js';
 import { connectDatabase } from './config/db.js';
 import { ensureDownloadDir } from './utils/files.js';
-import { startCleanupJob } from './utils/cleanup.js';
 import { startDownloadWorker } from './workers/downloadWorker.js';
-
-const port = process.env.PORT || 5000;
 
 await ensureDownloadDir();
 await connectDatabase();
-startCleanupJob();
 startDownloadWorker();
 
-app.listen(port, () => {
-  console.log(`Mediazy API running on port ${port}`);
-});
+console.log('Mediazy download worker running');

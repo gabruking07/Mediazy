@@ -1,11 +1,15 @@
 import fs from 'fs-extra';
+import { execFile } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
+import { promisify } from 'node:util';
 import sanitize from 'sanitize-filename';
 import ytdlp from 'yt-dlp-exec';
 import { nanoid } from 'nanoid';
 import { downloadsDir, publicDownloadUrl } from '../utils/files.js';
 import { isShortFormVideo } from '../utils/platform.js';
+
+const execFileAsync = promisify(execFile);
 
 const intFromEnv = (name, fallback) => {
   const value = Number.parseInt(process.env[name], 10);
@@ -21,6 +25,22 @@ const boolFromEnv = (name, fallback) => {
 const optionalIntOption = (name, optionName) => {
   const value = Number.parseInt(process.env[name], 10);
   return Number.isFinite(value) ? { [optionName]: value } : {};
+};
+
+const splitEnvList = (name) => (
+  (process.env[name] || '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean)
+);
+
+const pickProxy = () => {
+  const pool = splitEnvList('ROTATING_RESIDENTIAL_PROXIES');
+  if (pool.length) {
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  return process.env.YTDLP_PROXY || '';
 };
 
 const ytdlpBaseOptions = {
@@ -141,9 +161,11 @@ export const getCookieStatus = async () => {
 
 const runtimeOptions = async () => {
   const cookies = await ensureCookiesFile();
+  const proxy = pickProxy();
+
   return {
     ...(cookies ? { cookies } : {}),
-    ...(process.env.YTDLP_PROXY ? { proxy: process.env.YTDLP_PROXY } : {}),
+    ...(proxy ? { proxy } : {}),
     ...(process.env.YTDLP_USER_AGENT ? { userAgent: process.env.YTDLP_USER_AGENT } : {}),
     ...optionalIntOption('YTDLP_SLEEP_REQUESTS_SECONDS', 'sleepRequests'),
     ...optionalIntOption('YTDLP_SLEEP_INTERVAL_SECONDS', 'sleepInterval'),
@@ -502,6 +524,101 @@ const formatYtdlpError = (error) => (
   'Unknown yt-dlp error'
 );
 
+const fetchFallbackApiInfo = async ({ url, platform }) => {
+  if (!process.env.EXTRACTOR_FALLBACK_API_URL) {
+    return null;
+  }
+
+  const response = await fetch(process.env.EXTRACTOR_FALLBACK_API_URL, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      ...(process.env.EXTRACTOR_FALLBACK_API_KEY
+        ? { authorization: `Bearer ${process.env.EXTRACTOR_FALLBACK_API_KEY}` }
+        : {})
+    },
+    body: JSON.stringify({ url, platform })
+  });
+
+  if (!response.ok) {
+    const error = new Error(`Fallback API returned ${response.status}`);
+    error.publicMessage = 'The fallback extractor could not read this link right now.';
+    throw error;
+  }
+
+  return response.json();
+};
+
+const normalizeExternalInfo = ({ raw, url, platform }) => {
+  if (!raw) return null;
+
+  const info = Array.isArray(raw) ? raw.find(Boolean) : raw;
+  const title = info.title || info.description || info.id;
+  const mediaUrl = info.webpage_url || info.webpageUrl || info.url || url;
+
+  if (!title && !mediaUrl) {
+    return null;
+  }
+
+  return {
+    id: info.id || mediaUrl,
+    url,
+    platform,
+    title: title || 'Untitled media',
+    thumbnail: info.thumbnail || info.thumbnail_url || null,
+    duration: info.duration || null,
+    durationText: secondsToDuration(info.duration),
+    uploader: info.uploader || info.author || info.channel || null,
+    webpageUrl: mediaUrl,
+    isShortForm: isShortFormVideo({ platform, url, duration: info.duration }),
+    isCollection: false,
+    entryCount: 0,
+    qualities: [{ label: 'Best available', value: 'best' }],
+    hasSubtitles: false,
+    automaticCaptions: false,
+    extractor: info.extractor || 'fallback'
+  };
+};
+
+const fetchGalleryDlInfo = async ({ url, platform }) => {
+  const binary = process.env.GALLERY_DL_BINARY || 'gallery-dl';
+  const args = ['--dump-json'];
+  const proxy = pickProxy();
+
+  if (proxy) {
+    args.push('--proxy', proxy);
+  }
+
+  args.push(url);
+
+  try {
+    const { stdout } = await execFileAsync(binary, args, {
+      timeout: Number(process.env.GALLERY_DL_TIMEOUT_MS || 60000),
+      maxBuffer: 20 * 1024 * 1024
+    });
+    const jsonLine = stdout.split(/\r?\n/).find((line) => line.trim().startsWith('{'));
+    return normalizeExternalInfo({
+      raw: jsonLine ? JSON.parse(jsonLine) : null,
+      url,
+      platform
+    });
+  } catch (error) {
+    console.error('gallery-dl info failed:', error.stderr || error.message);
+    return null;
+  }
+};
+
+const fetchFallbackInfo = async ({ url, platform }) => {
+  const galleryInfo = await fetchGalleryDlInfo({ url, platform });
+  if (galleryInfo) return galleryInfo;
+
+  return normalizeExternalInfo({
+    raw: await fetchFallbackApiInfo({ url, platform }),
+    url,
+    platform
+  });
+};
+
 const publicYtdlpError = (error, platform = 'This platform') => {
   const rawMessage = formatYtdlpError(error);
   const lowerMessage = rawMessage.toLowerCase();
@@ -588,6 +705,11 @@ export const fetchMediaInfo = async ({ url, platform }) => {
     });
   } catch (error) {
     console.error('yt-dlp info failed:', formatYtdlpError(error));
+    const fallbackInfo = await fetchFallbackInfo({ url, platform });
+    if (fallbackInfo) {
+      return fallbackInfo;
+    }
+
     throw error;
   }
 

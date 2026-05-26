@@ -3,7 +3,7 @@ FROM node:20-bookworm-slim
 WORKDIR /app
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends ffmpeg python3 ca-certificates \
+  && apt-get install -y --no-install-recommends ffmpeg python3 ca-certificates gallery-dl \
   && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./

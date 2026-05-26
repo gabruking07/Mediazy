@@ -1,4 +1,5 @@
-import { BadgeCheck, Clock, FileAudio, FileText, ImageDown, Loader2, Music, Video } from 'lucide-react';
+import { BadgeCheck, Check, Clock, Copy, FileAudio, FileText, ImageDown, Loader2, Music, Share2, Video } from 'lucide-react';
+import { useState } from 'react';
 import { formatBytes } from '../utils/format.js';
 import ProgressBar from './ProgressBar.jsx';
 
@@ -15,7 +16,28 @@ export default function DownloadCard({
   progress,
   result
 }) {
+  const [shareCopied, setShareCopied] = useState(false);
+  const canNativeShare = typeof navigator !== 'undefined' && Boolean(navigator.share);
+
   if (!info) return null;
+
+  const handleShare = async () => {
+    const shareUrl = window.location.origin;
+    const shareText = `I used Mediazy to download media quickly. Try it here: ${shareUrl}`;
+
+    if (canNativeShare) {
+      await navigator.share({
+        title: 'Try Mediazy',
+        text: shareText,
+        url: shareUrl
+      });
+      return;
+    }
+
+    await navigator.clipboard.writeText(shareText);
+    setShareCopied(true);
+    window.setTimeout(() => setShareCopied(false), 2200);
+  };
 
   return (
     <section className="glass grid min-w-0 gap-4 rounded-2xl p-3 sm:p-4 md:grid-cols-[minmax(220px,320px)_1fr] md:gap-5 md:p-5">
@@ -110,14 +132,27 @@ export default function DownloadCard({
             <p className="mt-1 break-words text-sm text-slate-300">
               {result.fileName} · {formatBytes(result.fileSize)} · server copy is removed after saving
             </p>
-            <a
-              className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 font-bold text-ink transition hover:bg-emerald-300 sm:w-auto"
-              href={result.downloadUrl}
-              download
-            >
-              <FileText size={18} />
-              Save file
-            </a>
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <a
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 font-bold text-ink transition hover:bg-emerald-300 sm:w-auto"
+                href={result.downloadUrl}
+                download
+              >
+                <FileText size={18} />
+                Save file
+              </a>
+              <button
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/15 px-5 font-bold text-slate-100 transition hover:border-brand/70 hover:text-white sm:w-auto"
+                type="button"
+                onClick={handleShare}
+              >
+                {shareCopied ? <Check size={18} /> : canNativeShare ? <Share2 size={18} /> : <Copy size={18} />}
+                {shareCopied ? 'Link copied' : 'Share with friends'}
+              </button>
+            </div>
+            <p className="mt-3 text-sm leading-6 text-slate-300">
+              Liked Mediazy? Share it with friends so they can use it too.
+            </p>
           </div>
         )}
 

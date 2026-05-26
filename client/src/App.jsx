@@ -667,7 +667,7 @@ export default function App() {
       });
       setTargetProgress(100);
       setTargetResult(data);
-      notifySuccess('File ready', 'Save it to your device.');
+      notifySuccess('File ready', 'Save it, then share Mediazy with friends.');
     } catch (error) {
       notifyError('Download failed', error.message);
     } finally {
@@ -692,7 +692,7 @@ export default function App() {
       if (data.quota) {
         setQuota(data.quota);
       }
-      notifySuccess('File ready', 'Save it to your device.');
+      notifySuccess('File ready', 'Save it, then share Mediazy with friends.');
     } catch (error) {
       if (/log in|login|required/i.test(error.message)) {
         setAuthMode('login');

@@ -1,5 +1,7 @@
 import fs from 'fs-extra';
 import path from 'node:path';
+import { addDownloadJob, getDownloadJob, getDownloadQueueEvents, isDownloadQueueEnabled } from '../queues/downloadQueue.js';
+import { cacheKey, getCachedJson, setCachedJson } from '../services/cacheService.js';
 import { listHistory, recordDownload } from '../services/historyService.js';
 import { createDownload, fetchInstagramProfileMedia, fetchMediaInfo, getCookieStatus, getInstagramCookieStatus } from '../services/ytdlpService.js';
 import { downloadsDir } from '../utils/files.js';
@@ -18,7 +20,13 @@ const getUnlimitedQuota = () => ({
 export const getVideoInfo = async (req, res, next) => {
   try {
     const { normalizedUrl, platform } = parseSupportedUrl(req.body.url);
-    const info = await fetchMediaInfo({ url: normalizedUrl, platform });
+    const key = cacheKey('info', normalizedUrl, platform);
+    const cached = await getCachedJson(key);
+    const info = cached || await fetchMediaInfo({ url: normalizedUrl, platform });
+
+    if (!cached) {
+      await setCachedJson(key, info);
+    }
 
     res.json(info);
   } catch (error) {
@@ -31,7 +39,14 @@ export const getVideoInfo = async (req, res, next) => {
 
 export const getInstagramProfileMedia = async (req, res, next) => {
   try {
-    const result = await fetchInstagramProfileMedia({ username: req.body.username });
+    const key = cacheKey('instagram-profile', req.body.username);
+    const cached = await getCachedJson(key);
+    const result = cached || await fetchInstagramProfileMedia({ username: req.body.username });
+
+    if (!cached) {
+      await setCachedJson(key, result);
+    }
+
     res.json(result);
   } catch (error) {
     error.publicMessage = error.statusCode
@@ -63,45 +78,112 @@ export const downloadMedia = async (req, res, next) => {
     const type = allowedTypes.has(req.body.type) ? req.body.type : 'video';
     const quality = req.body.quality || 'best';
     const format = allowedVideoFormats.has(req.body.format) ? req.body.format : 'mp4';
-    const quota = getUnlimitedQuota();
-
-    const info = await fetchMediaInfo({ url: normalizedUrl, platform });
-    const result = await createDownload({
+    const payload = {
       url: normalizedUrl,
       platform,
       type,
       quality,
       format,
-      title: info.title
-    });
-
-    await recordDownload({
-      url: normalizedUrl,
-      platform,
-      title: info.title,
-      type,
-      quality,
-      format,
-      fileName: result.fileName,
-      fileSize: result.fileSize,
-      ...(req.user ? { user: req.user._id } : {}),
       ipAddress: req.ip,
       userAgent: req.get('user-agent')
-    });
+    };
 
-    res.json({
-      ...result,
-      title: info.title,
-      platform,
-      type,
-      quality,
-      format,
-      quota
-    });
+    if (req.user) {
+      payload.user = String(req.user._id);
+    }
+
+    if (!isDownloadQueueEnabled()) {
+      res.json(await executeDownload(payload));
+      return;
+    }
+
+    const job = await addDownloadJob(payload);
+    const queueEvents = getDownloadQueueEvents();
+    const timeout = Number(process.env.DOWNLOAD_JOB_WAIT_TIMEOUT_MS || 170000);
+    const result = await job.waitUntilFinished(queueEvents, timeout);
+
+    res.json({ ...result, jobId: job.id });
   } catch (error) {
     error.publicMessage = error.statusCode
       ? error.message
       : error.publicMessage || 'Download failed. The platform may be blocking this media or the format is unavailable.';
+    next(error);
+  }
+};
+
+export const executeDownload = async ({
+  url,
+  platform,
+  type,
+  quality,
+  format,
+  user,
+  ipAddress,
+  userAgent
+}) => {
+  const quota = getUnlimitedQuota();
+  const key = cacheKey('info', url, platform);
+  const cached = await getCachedJson(key);
+  const info = cached || await fetchMediaInfo({ url, platform });
+
+  if (!cached) {
+    await setCachedJson(key, info);
+  }
+
+  const result = await createDownload({
+    url,
+    platform,
+    type,
+    quality,
+    format,
+    title: info.title
+  });
+
+  await recordDownload({
+    url,
+    platform,
+    title: info.title,
+    type,
+    quality,
+    format,
+    fileName: result.fileName,
+    fileSize: result.fileSize,
+    ...(user ? { user } : {}),
+    ipAddress,
+    userAgent
+  });
+
+  return {
+    ...result,
+    title: info.title,
+    platform,
+    type,
+    quality,
+    format,
+    quota
+  };
+};
+
+export const getDownloadJobStatus = async (req, res, next) => {
+  try {
+    const job = await getDownloadJob(req.params.jobId);
+
+    if (!job) {
+      const error = new Error('Download job was not found.');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const state = await job.getState();
+
+    res.json({
+      id: job.id,
+      state,
+      progress: job.progress,
+      result: job.returnvalue || null,
+      failedReason: job.failedReason || null
+    });
+  } catch (error) {
     next(error);
   }
 };
