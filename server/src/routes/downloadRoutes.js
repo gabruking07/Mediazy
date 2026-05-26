@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   downloadMedia,
+  getCookieDebug,
   getHistory,
   getInstagramCookieDebug,
   getInstagramProfileMedia,
@@ -13,6 +14,7 @@ import { optionalAuth, requireAuth } from '../middleware/authMiddleware.js';
 const router = Router();
 
 router.post('/info', getVideoInfo);
+router.get('/cookies/debug', getCookieDebug);
 router.post('/instagram/profile', getInstagramProfileMedia);
 router.get('/instagram/cookies/debug', getInstagramCookieDebug);
 router.post('/download', optionalAuth, downloadMedia);

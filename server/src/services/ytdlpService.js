@@ -68,7 +68,7 @@ const parseCookieLine = (line) => {
     ? cleanLine.split('\t')
     : cleanLine.split(/\s+/);
 
-  if (parts.length < 7 || !/(^|\.)instagram\.com$/i.test(parts[0])) {
+  if (parts.length < 7) {
     return null;
   }
 
@@ -79,7 +79,7 @@ const parseCookieLine = (line) => {
   };
 };
 
-const readInstagramCookies = async () => {
+const readCookieFile = async () => {
   const cookiesPath = await ensureCookiesFile();
   if (!cookiesPath) return [];
 
@@ -93,6 +93,14 @@ const readInstagramCookies = async () => {
     return [];
   }
 };
+
+const readCookiesForDomain = async (domainPattern) => (
+  (await readCookieFile()).filter((cookie) => domainPattern.test(cookie.domain))
+);
+
+const readInstagramCookies = async () => (
+  readCookiesForDomain(/(^|\.)instagram\.com$/i)
+);
 
 const instagramCookieHeader = async () => (
   (await readInstagramCookies())
@@ -111,6 +119,23 @@ export const getInstagramCookieStatus = async () => {
     hasDsUserId: names.has('ds_user_id'),
     hasCsrfToken: names.has('csrftoken'),
     hasMid: names.has('mid')
+  };
+};
+
+export const getCookieStatus = async () => {
+  const cookies = await readCookieFile();
+  const instagramCookies = cookies.filter((cookie) => /(^|\.)instagram\.com$/i.test(cookie.domain));
+  const youtubeCookies = cookies.filter((cookie) => /(^|\.)(youtube\.com|google\.com)$/i.test(cookie.domain));
+  const youtubeNames = new Set(youtubeCookies.map((cookie) => cookie.name));
+
+  return {
+    configured: Boolean(process.env.YTDLP_COOKIES_PATH || process.env.YTDLP_COOKIES_BASE64),
+    totalCookieCount: cookies.length,
+    instagramCookieCount: instagramCookies.length,
+    youtubeCookieCount: youtubeCookies.length,
+    hasYouTubeLoginInfo: youtubeNames.has('LOGIN_INFO'),
+    hasYouTubeVisitorInfo: youtubeNames.has('VISITOR_INFO1_LIVE'),
+    hasGoogleSid: youtubeNames.has('SID') || youtubeNames.has('__Secure-1PSID') || youtubeNames.has('__Secure-3PSID')
   };
 };
 

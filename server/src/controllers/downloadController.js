@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import path from 'node:path';
 import { listHistory, recordDownload } from '../services/historyService.js';
-import { createDownload, fetchInstagramProfileMedia, fetchMediaInfo, getInstagramCookieStatus } from '../services/ytdlpService.js';
+import { createDownload, fetchInstagramProfileMedia, fetchMediaInfo, getCookieStatus, getInstagramCookieStatus } from '../services/ytdlpService.js';
 import { downloadsDir } from '../utils/files.js';
 import { parseSupportedUrl } from '../utils/platform.js';
 
@@ -44,6 +44,14 @@ export const getInstagramProfileMedia = async (req, res, next) => {
 export const getInstagramCookieDebug = async (_req, res, next) => {
   try {
     res.json(await getInstagramCookieStatus());
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCookieDebug = async (_req, res, next) => {
+  try {
+    res.json(await getCookieStatus());
   } catch (error) {
     next(error);
   }
