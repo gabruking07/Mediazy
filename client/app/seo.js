@@ -22,10 +22,10 @@ export const defaultSeo = {
 export const seoPages = {
   home: defaultSeo,
   stories: {
-    title: 'Instagram Story Downloader - Download Stories and Highlights',
-    description: 'Use Mediazy to download public Instagram stories, highlights, reels, and profile media in a clean browser experience.',
+    title: 'Instagram Story Downloader - Download Stories',
+    description: 'Use Mediazy to download public Instagram stories, reels, and profile media in a clean browser experience.',
     path: '/instagram-story-downloader',
-    keywords: ['Instagram story downloader', 'download Instagram stories', 'Instagram highlights downloader', 'Instagram profile media downloader']
+    keywords: ['Instagram story downloader', 'download Instagram stories', 'Instagram profile media downloader']
   },
   reels: {
     title: 'Instagram Reels Downloader - Save Public Reels Online',

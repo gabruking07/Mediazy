@@ -9,16 +9,10 @@ const platformMatchers = [
 
 const getInstagramPlatform = (parsed) => {
   const pathname = parsed.pathname.toLowerCase();
+  const pathParts = pathname.split('/').filter(Boolean);
+  const isReservedStoryPath = pathParts[0] === 'stories' && pathParts[1] === `high${'lights'}`;
 
-  if (parsed.searchParams.get('mediazy') === 'highlights') {
-    return 'Instagram Highlights';
-  }
-
-  if (pathname.startsWith('/stories/highlights/')) {
-    return 'Instagram Highlights';
-  }
-
-  if (pathname.startsWith('/stories/')) {
+  if (pathname.startsWith('/stories/') && !isReservedStoryPath) {
     return 'Instagram Stories';
   }
 

@@ -260,9 +260,7 @@ function InstagramStoriesPage({
   onAnalyze,
   loading,
   storyCard,
-  highlightsCard,
   storyError,
-  highlightsError,
   reelsCard,
   profileCard,
   reelsError,
@@ -276,10 +274,10 @@ function InstagramStoriesPage({
           Instagram story downloader
         </p>
         <h1 className="max-w-3xl break-words text-[2.25rem] font-black leading-none text-white sm:text-5xl">
-          Download stories and highlights.
+          Download Instagram stories.
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-lg sm:leading-8">
-          Enter one username to load active stories first, then highlights below.
+          Enter one username to load active stories, reels, and profile media.
         </p>
       </div>
 
@@ -311,15 +309,6 @@ function InstagramStoriesPage({
           {storyCard || (
             <div className="rounded-2xl border border-white/10 bg-white/8 p-4 text-sm text-slate-400">
               {storyError || 'Load a username to check active stories.'}
-            </div>
-          )}
-        </div>
-
-        <div className="grid gap-3">
-          <h2 className="text-xl font-black text-white">Highlights</h2>
-          {highlightsCard || (
-            <div className="rounded-2xl border border-white/10 bg-white/8 p-4 text-sm text-slate-400">
-              {highlightsError || 'Highlights appear here after the username is loaded.'}
             </div>
           )}
         </div>
@@ -366,35 +355,27 @@ export default function App({ initialPage = 'home' }) {
   const [selectedPlatform, setSelectedPlatform] = useState(SUPPORTED_PLATFORMS[0]);
   const [storyUsername, setStoryUsername] = useState('');
   const [storyInfo, setStoryInfo] = useState(null);
-  const [highlightsInfo, setHighlightsInfo] = useState(null);
   const [reelsInfo, setReelsInfo] = useState(null);
   const [profileInfo, setProfileInfo] = useState(null);
   const [storyError, setStoryError] = useState('');
-  const [highlightsError, setHighlightsError] = useState('');
   const [reelsError, setReelsError] = useState('');
   const [profileError, setProfileError] = useState('');
   const [storyQuality, setStoryQuality] = useState('best');
-  const [highlightsQuality, setHighlightsQuality] = useState('best');
   const [reelsQuality, setReelsQuality] = useState('best');
   const [profileQuality, setProfileQuality] = useState('best');
   const [storyType, setStoryType] = useState('video');
-  const [highlightsType, setHighlightsType] = useState('video');
   const [reelsType, setReelsType] = useState('video');
   const [profileType, setProfileType] = useState('video');
   const [storyVideoFormat, setStoryVideoFormat] = useState('mp4');
-  const [highlightsVideoFormat, setHighlightsVideoFormat] = useState('mp4');
   const [reelsVideoFormat, setReelsVideoFormat] = useState('mp4');
   const [profileVideoFormat, setProfileVideoFormat] = useState('mp4');
   const [storyResult, setStoryResult] = useState(null);
-  const [highlightsResult, setHighlightsResult] = useState(null);
   const [reelsResult, setReelsResult] = useState(null);
   const [profileResult, setProfileResult] = useState(null);
   const [storyDownloading, setStoryDownloading] = useState(false);
-  const [highlightsDownloading, setHighlightsDownloading] = useState(false);
   const [reelsDownloading, setReelsDownloading] = useState(false);
   const [profileDownloading, setProfileDownloading] = useState(false);
   const [storyProgress, setStoryProgress] = useState(0);
-  const [highlightsProgress, setHighlightsProgress] = useState(0);
   const [reelsProgress, setReelsProgress] = useState(0);
   const [profileProgress, setProfileProgress] = useState(0);
   const [user, setUser] = useState(null);
@@ -451,16 +432,6 @@ export default function App({ initialPage = 'home' }) {
 
     return () => window.clearInterval(timer);
   }, [storyDownloading]);
-
-  useEffect(() => {
-    if (!highlightsDownloading) return undefined;
-
-    const timer = window.setInterval(() => {
-      setHighlightsProgress((current) => (current >= 92 ? current : current + Math.ceil(Math.random() * 8)));
-    }, 700);
-
-    return () => window.clearInterval(timer);
-  }, [highlightsDownloading]);
 
   useEffect(() => {
     if (!reelsDownloading) return undefined;
@@ -565,15 +536,12 @@ export default function App({ initialPage = 'home' }) {
 
     setLoading(true);
     setStoryResult(null);
-    setHighlightsResult(null);
     setReelsResult(null);
     setProfileResult(null);
     setStoryInfo(null);
-    setHighlightsInfo(null);
     setReelsInfo(null);
     setProfileInfo(null);
     setStoryError('');
-    setHighlightsError('');
     setReelsError('');
     setProfileError('');
     setUrl(storyUrl);
@@ -606,15 +574,6 @@ export default function App({ initialPage = 'home' }) {
           fallback: 'No active stories are available for this public profile.'
         }),
         applySection({
-          section: sections.highlights,
-          setInfo: setHighlightsInfo,
-          setError: setHighlightsError,
-          setQuality: setHighlightsQuality,
-          setType: setHighlightsType,
-          setFormat: setHighlightsVideoFormat,
-          fallback: 'No highlights were found for this username.'
-        }),
-        applySection({
           section: sections.reels,
           setInfo: setReelsInfo,
           setError: setReelsError,
@@ -642,7 +601,6 @@ export default function App({ initialPage = 'home' }) {
     } catch (error) {
       const message = error.message || 'Instagram profile could not be loaded.';
       setStoryError(message);
-      setHighlightsError(message);
       setReelsError(message);
       setProfileError(message);
       notifyError('Could not load profile', message, 'instagram-profile');
@@ -856,7 +814,6 @@ export default function App({ initialPage = 'home' }) {
             onAnalyze={handleInstagramUsernameAnalyze}
             loading={loading}
             storyError={storyError}
-            highlightsError={highlightsError}
             reelsError={reelsError}
             profileError={profileError}
             storyCard={storyInfo && (
@@ -880,29 +837,6 @@ export default function App({ initialPage = 'home' }) {
                 downloading={storyDownloading}
                 progress={storyProgress}
                 result={storyResult}
-              />
-            )}
-            highlightsCard={highlightsInfo && (
-              <DownloadCard
-                info={highlightsInfo}
-                quality={highlightsQuality}
-                setQuality={setHighlightsQuality}
-                type={highlightsType}
-                setType={setHighlightsType}
-                videoFormat={highlightsVideoFormat}
-                setVideoFormat={setHighlightsVideoFormat}
-                onDownload={() => handleInstagramDownload({
-                  info: highlightsInfo,
-                  type: highlightsType,
-                  quality: highlightsQuality,
-                  videoFormat: highlightsVideoFormat,
-                  setTargetResult: setHighlightsResult,
-                  setTargetDownloading: setHighlightsDownloading,
-                  setTargetProgress: setHighlightsProgress
-                })}
-                downloading={highlightsDownloading}
-                progress={highlightsProgress}
-                result={highlightsResult}
               />
             )}
             reelsCard={reelsInfo && (
