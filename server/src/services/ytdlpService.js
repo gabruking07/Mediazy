@@ -27,6 +27,11 @@ const optionalIntOption = (name, optionName) => {
   return Number.isFinite(value) ? { [optionName]: value } : {};
 };
 
+const optionalStringOption = (name, optionName) => {
+  const value = (process.env[name] || '').trim();
+  return value ? { [optionName]: value } : {};
+};
+
 const splitEnvList = (name) => (
   (process.env[name] || '')
     .split(',')
@@ -53,7 +58,8 @@ const ytdlpBaseOptions = {
   fragmentRetries: intFromEnv('YTDLP_FRAGMENT_RETRIES', 5),
   extractorRetries: intFromEnv('YTDLP_EXTRACTOR_RETRIES', 3),
   fileAccessRetries: intFromEnv('YTDLP_FILE_ACCESS_RETRIES', 3),
-  concurrentFragments: intFromEnv('YTDLP_CONCURRENT_FRAGMENTS', 4)
+  concurrentFragments: intFromEnv('YTDLP_CONCURRENT_FRAGMENTS', 4),
+  ...optionalStringOption('YTDLP_GEO_BYPASS_COUNTRY', 'geoBypassCountry')
 };
 
 const runtimeCookiesPath = process.env.YTDLP_COOKIES_PATH ||

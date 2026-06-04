@@ -1,10 +1,12 @@
 import '../src/styles.css';
+import Script from 'next/script';
 import Providers from './providers.jsx';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://mediazy.xyz';
 const siteName = 'Mediazy';
 const title = 'Mediazy - Free Video Downloader for Reels, Stories, Shorts and Social Media';
 const description = 'Download videos, reels, stories, audio, subtitles, and thumbnails from supported social platforms with Mediazy.';
+const adsenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 
 export const metadata = {
   metadataBase: new URL(siteUrl),
@@ -76,6 +78,26 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
+        {adsenseClientId && (
+          <>
+            <Script
+              async
+              crossOrigin="anonymous"
+              src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClientId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="mediazy-ads-refresh" strategy="afterInteractive">
+              {`
+                window.MediazyAds = window.MediazyAds || {};
+                window.MediazyAds.refresh = function () {
+                  try {
+                    (window.adsbygoogle = window.adsbygoogle || []).push({});
+                  } catch (error) {}
+                };
+              `}
+            </Script>
+          </>
+        )}
         {children}
         <Providers />
       </body>
