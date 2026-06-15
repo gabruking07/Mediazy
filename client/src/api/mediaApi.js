@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const configuredApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+const hostedApiBaseUrl = 'https://mediazy.onrender.com';
 
 const isLocalhostUrl = (value) => /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?\/?$/i.test(value);
 
@@ -12,7 +13,11 @@ const resolveApiBaseUrl = () => {
   const isLocalPage = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
 
   if (!isLocalPage && isLocalhostUrl(configuredApiBaseUrl)) {
-    return '';
+    return hostedApiBaseUrl;
+  }
+
+  if (!isLocalPage && /(^|\.)mediazy\.xyz$/i.test(window.location.hostname) && !configuredApiBaseUrl) {
+    return hostedApiBaseUrl;
   }
 
   return configuredApiBaseUrl;

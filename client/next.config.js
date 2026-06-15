@@ -1,4 +1,6 @@
-const apiBaseUrl = (process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
+const hostedApiBaseUrl = 'https://mediazy.onrender.com';
+const configuredApiBaseUrl = process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || hostedApiBaseUrl;
+const apiBaseUrl = configuredApiBaseUrl.replace(/\/$/, '');
 const shouldProxyApi = apiBaseUrl && !/^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i.test(apiBaseUrl);
 
 const nextConfig = {
