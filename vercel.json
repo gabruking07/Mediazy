@@ -1,5 +1,5 @@
 {
   "framework": "nextjs",
-  "installCommand": "npm install --prefix client",
-  "buildCommand": "npm run build --prefix client"
+  "installCommand": "if [ -f client/package.json ]; then npm install --prefix client; else npm install; fi",
+  "buildCommand": "if [ -f client/package.json ]; then npm run build --prefix client; else npm run build; fi"
 }
