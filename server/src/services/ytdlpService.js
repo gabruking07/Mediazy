@@ -377,6 +377,28 @@ const publicYtdlpError = (error, platform = 'This platform') => {
     .slice(0, 300);
 };
 
+const ytdlpStatusCode = (error) => {
+  const rawMessage = formatYtdlpError(error);
+
+  if (/private|members-only|login required|sign in|cookies|not authorized|forbidden|confirm you.?re not a bot/i.test(rawMessage)) {
+    return 403;
+  }
+
+  if (/unavailable|removed|deleted|does not exist|not found|copyright/i.test(rawMessage)) {
+    return 404;
+  }
+
+  if (/timeout|timed out|econnreset|network|unable to download webpage|temporary failure/i.test(rawMessage)) {
+    return 504;
+  }
+
+  if (/unsupported url|no suitable extractor/i.test(rawMessage)) {
+    return 400;
+  }
+
+  return undefined;
+};
+
 const runYtdlpWithFallbacks = async ({ url, platform, options }) => {
   let lastError;
   const extraOptions = await runtimeOptions();
@@ -404,6 +426,7 @@ const runYtdlpWithFallbacks = async ({ url, platform, options }) => {
 
   if (lastError) {
     lastError.publicMessage = publicYtdlpError(lastError, platform);
+    lastError.statusCode = ytdlpStatusCode(lastError);
   }
 
   throw lastError;
