@@ -5,7 +5,6 @@ import {
   getDownloadJobStatus,
   getHistory,
   getInstagramCookieDebug,
-  getInstagramProfileMedia,
   getQuota,
   getVideoInfo,
   serveDownloadFile
@@ -16,7 +15,6 @@ const router = Router();
 
 router.post('/info', getVideoInfo);
 router.get('/cookies/debug', getCookieDebug);
-router.post('/instagram/profile', getInstagramProfileMedia);
 router.get('/instagram/cookies/debug', getInstagramCookieDebug);
 router.post('/download', optionalAuth, downloadMedia);
 router.get('/download/jobs/:jobId', getDownloadJobStatus);

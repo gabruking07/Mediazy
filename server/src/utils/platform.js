@@ -7,18 +7,6 @@ const platformMatchers = [
   { platform: 'Video', regex: /.+/ }
 ];
 
-const getInstagramPlatform = (parsed) => {
-  const pathname = parsed.pathname.toLowerCase();
-  const pathParts = pathname.split('/').filter(Boolean);
-  const isReservedStoryPath = pathParts[0] === 'stories' && pathParts[1] === `high${'lights'}`;
-
-  if (pathname.startsWith('/stories/') && !isReservedStoryPath) {
-    return 'Instagram Stories';
-  }
-
-  return 'Instagram';
-};
-
 export const parseSupportedUrl = (value) => {
   let parsed;
 
@@ -37,12 +25,19 @@ export const parseSupportedUrl = (value) => {
   }
 
   const hostname = parsed.hostname.replace(/^www\./i, '');
+  const pathname = parsed.pathname.toLowerCase();
+
+  if (/(^|\.)instagram\.com$/i.test(hostname) && pathname.startsWith('/stories/')) {
+    const error = new Error('This Instagram URL type is no longer supported.');
+    error.statusCode = 410;
+    throw error;
+  }
+
   const match = platformMatchers.find((item) => item.regex.test(hostname));
-  const platform = match.platform === 'Instagram' ? getInstagramPlatform(parsed) : match.platform;
 
   return {
     normalizedUrl: parsed.toString(),
-    platform,
+    platform: match.platform,
     hostname
   };
 };

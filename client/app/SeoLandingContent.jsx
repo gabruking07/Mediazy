@@ -33,7 +33,7 @@ export default function SeoLandingContent({ page }) {
           <details className="rounded-xl border border-white/10 bg-slate-950/55 p-4">
             <summary className="cursor-pointer font-bold text-white">Which links work with Mediazy?</summary>
             <p className="mt-2 text-sm leading-6 text-slate-400">
-              Mediazy supports public links from platforms handled by the configured extractors, including common social video, story, reel, audio, subtitle, and thumbnail sources.
+              Mediazy supports public links from platforms handled by the configured extractors, including common social video, reel, audio, subtitle, and thumbnail sources.
             </p>
           </details>
           <details className="rounded-xl border border-white/10 bg-slate-950/55 p-4">

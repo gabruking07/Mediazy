@@ -1,8 +1,7 @@
-import { DownloadCloud, HelpCircle, Home, Instagram, LogOut, Mail, UserRound } from 'lucide-react';
+import { DownloadCloud, HelpCircle, Home, LogOut, Mail, UserRound } from 'lucide-react';
 
 const navItems = [
   { id: 'home', label: 'Home', icon: Home, href: '/' },
-  { id: 'stories', label: 'Stories', icon: Instagram, href: '/instagram-story-downloader' },
   { id: 'how-to-use', label: 'How to use', icon: HelpCircle, href: '/how-to-use' },
   { id: 'contact', label: 'Contact us', icon: Mail, href: '/contact' }
 ];

@@ -4,8 +4,8 @@ import Providers from './providers.jsx';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://mediazy.xyz';
 const siteName = 'Mediazy';
-const title = 'Mediazy - Free Video Downloader for Reels, Stories, Shorts and Social Media';
-const description = 'Download videos, reels, stories, audio, subtitles, and thumbnails from supported social platforms with Mediazy.';
+const title = 'Mediazy - Free Video Downloader for Reels, Shorts and Social Media';
+const description = 'Download videos, reels, audio, subtitles, and thumbnails from supported social platforms with Mediazy.';
 const adsenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 
 export const metadata = {
@@ -18,7 +18,6 @@ export const metadata = {
   description,
   keywords: [
     'video downloader',
-    'Instagram story downloader',
     'Instagram reels downloader',
     'YouTube downloader',
     'Facebook video downloader',

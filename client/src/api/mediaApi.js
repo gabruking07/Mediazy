@@ -25,7 +25,7 @@ const resolveApiBaseUrl = () => {
 
 const api = axios.create({
   baseURL: resolveApiBaseUrl(),
-  timeout: 180000
+  timeout: 70000
 });
 
 api.interceptors.request.use((config) => {
@@ -38,24 +38,25 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-const getMessage = (error) => (
-  error.response?.data?.message ||
-  error.message ||
-  'Something went wrong. Please try again.'
-);
+const getMessage = (error) => {
+  if (error.code === 'ECONNABORTED') {
+    return 'The server is still waiting on the platform. Try again in a moment, or use another public link.';
+  }
+
+  if (error.message === 'Network Error') {
+    return 'Mediazy could not reach the backend. Check the API URL and redeploy the frontend.';
+  }
+
+  return (
+    error.response?.data?.message ||
+    error.message ||
+    'Something went wrong. Please try again.'
+  );
+};
 
 export const fetchVideoInfo = async (url) => {
   try {
     const { data } = await api.post('/api/info', { url });
-    return data;
-  } catch (error) {
-    throw new Error(getMessage(error));
-  }
-};
-
-export const fetchInstagramProfileMedia = async (username) => {
-  try {
-    const { data } = await api.post('/api/instagram/profile', { username });
     return data;
   } catch (error) {
     throw new Error(getMessage(error));

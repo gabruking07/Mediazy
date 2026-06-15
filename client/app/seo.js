@@ -1,14 +1,13 @@
 export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://mediazy.xyz';
 
 export const defaultSeo = {
-  title: 'Mediazy - Free Video Downloader for Reels, Stories, Shorts and Social Media',
-  description: 'Download videos, reels, stories, audio, subtitles, and thumbnails from supported social platforms with Mediazy.',
+  title: 'Mediazy - Free Video Downloader for Reels, Shorts and Social Media',
+  description: 'Download videos, reels, audio, subtitles, and thumbnails from supported social platforms with Mediazy.',
   path: '/',
   keywords: [
     'video downloader',
     'free video downloader',
     'online video downloader',
-    'Instagram story downloader',
     'Instagram reels downloader',
     'YouTube downloader',
     'Facebook video downloader',
@@ -21,12 +20,6 @@ export const defaultSeo = {
 
 export const seoPages = {
   home: defaultSeo,
-  stories: {
-    title: 'Instagram Story Downloader - Download Stories',
-    description: 'Use Mediazy to download public Instagram stories, reels, and profile media in a clean browser experience.',
-    path: '/instagram-story-downloader',
-    keywords: ['Instagram story downloader', 'download Instagram stories', 'Instagram profile media downloader']
-  },
   reels: {
     title: 'Instagram Reels Downloader - Save Public Reels Online',
     description: 'Download public Instagram reels with Mediazy. Paste a reel link, preview the media, and save the file when ready.',
@@ -77,7 +70,7 @@ export const seoPages = {
   },
   contact: {
     title: 'Contact Mediazy Support',
-    description: 'Contact Mediazy support for help with supported video, audio, subtitle, thumbnail, story, and reel downloads.',
+    description: 'Contact Mediazy support for help with supported video, audio, subtitle, thumbnail, and reel downloads.',
     path: '/contact',
     keywords: ['Mediazy support', 'video downloader support', 'contact Mediazy']
   }
@@ -165,7 +158,7 @@ export const structuredDataForPage = (page) => {
             name: 'Which downloads are supported?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Mediazy supports available video, audio, subtitle, thumbnail, story, reel, and social media downloads where the source platform allows access.'
+              text: 'Mediazy supports available video, audio, subtitle, thumbnail, reel, and social media downloads where the source platform allows access.'
             }
           }
         ]

@@ -3,7 +3,7 @@ import path from 'node:path';
 import { addDownloadJob, getDownloadJob, getDownloadQueueEvents, isDownloadQueueEnabled } from '../queues/downloadQueue.js';
 import { cacheKey, getCachedJson, setCachedJson } from '../services/cacheService.js';
 import { listHistory, recordDownload } from '../services/historyService.js';
-import { createDownload, fetchInstagramProfileMedia, fetchMediaInfo, getCookieStatus, getInstagramCookieStatus } from '../services/ytdlpService.js';
+import { createDownload, fetchMediaInfo, getCookieStatus, getInstagramCookieStatus } from '../services/ytdlpService.js';
 import { downloadsDir, publicBaseUrlFromRequest } from '../utils/files.js';
 import { parseSupportedUrl } from '../utils/platform.js';
 
@@ -33,25 +33,6 @@ export const getVideoInfo = async (req, res, next) => {
     error.publicMessage = error.statusCode
       ? error.message
       : error.publicMessage || 'Unable to read this video. Check the URL and try again.';
-    next(error);
-  }
-};
-
-export const getInstagramProfileMedia = async (req, res, next) => {
-  try {
-    const key = cacheKey('instagram-profile', req.body.username);
-    const cached = await getCachedJson(key);
-    const result = cached || await fetchInstagramProfileMedia({ username: req.body.username });
-
-    if (!cached) {
-      await setCachedJson(key, result);
-    }
-
-    res.json(result);
-  } catch (error) {
-    error.publicMessage = error.statusCode
-      ? error.message
-      : error.publicMessage || 'Instagram profile could not be loaded. Check the username and try again.';
     next(error);
   }
 };

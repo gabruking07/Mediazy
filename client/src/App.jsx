@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { AtSign, BadgeCheck, CheckCircle2, Clipboard, Download, Images, Link2, LockKeyhole, Mail, MessageCircle, Send, Sparkles, Smartphone, X, XCircle } from 'lucide-react';
+import { BadgeCheck, CheckCircle2, Clipboard, Download, Link2, LockKeyhole, Mail, MessageCircle, Send, Sparkles, Smartphone, X, XCircle } from 'lucide-react';
 import {
   fetchCurrentUser,
   fetchDownloadQuota,
-  fetchInstagramProfileMedia,
   fetchVideoInfo,
   loginUser,
   registerUser,
@@ -49,26 +48,7 @@ const SUPPORTED_PLATFORMS = [
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phonePattern = /^\+?[1-9]\d{9,14}$/;
 const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
-const instagramUsernamePattern = /^[A-Za-z0-9._]{1,30}$/;
 const supportEmail = 'mediazy.xyz@gmail.com';
-
-function normalizeInstagramUsernameInput(value) {
-  const input = value.trim().replace(/^@+/, '');
-
-  try {
-    const parsed = new URL(input.includes('://') ? input : `https://${input}`);
-    const host = parsed.hostname.replace(/^www\./i, '');
-
-    if (host === 'instagram.com') {
-      const [firstPathPart, secondPathPart] = parsed.pathname.split('/').filter(Boolean);
-      return firstPathPart?.toLowerCase() === 'stories' ? secondPathPart || '' : firstPathPart || '';
-    }
-  } catch {
-    return input;
-  }
-
-  return input;
-}
 
 function refreshGuestAds() {
   window.MediazyAds?.refresh?.();
@@ -254,90 +234,8 @@ function ContactPage({ onStart }) {
   );
 }
 
-function InstagramStoriesPage({
-  storyUsername,
-  setStoryUsername,
-  onAnalyze,
-  loading,
-  storyCard,
-  storyError,
-  reelsCard,
-  profileCard,
-  reelsError,
-  profileError
-}) {
-  return (
-    <section className="grid gap-5">
-      <div className="min-w-0">
-        <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/8 px-3 py-2 text-xs font-semibold text-slate-300">
-          <Images size={16} className="text-brand" />
-          Instagram story downloader
-        </p>
-        <h1 className="max-w-3xl break-words text-[2.25rem] font-black leading-none text-white sm:text-5xl">
-          Download Instagram stories.
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-lg sm:leading-8">
-          Enter one username to load active stories, reels, and profile media.
-        </p>
-      </div>
-
-      <form className="glass grid gap-4 rounded-2xl p-3 sm:p-5" onSubmit={onAnalyze}>
-        <div className="grid gap-2 sm:grid-cols-[1fr_auto] sm:gap-4">
-          <label className="relative block min-w-0">
-            <AtSign className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 sm:left-4" size={19} />
-            <input
-              className="h-12 w-full rounded-xl border border-white/10 bg-white/8 pl-10 pr-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-brand/70 focus:bg-white/10 sm:h-14 sm:pl-12 sm:pr-4 sm:text-base"
-              placeholder="Instagram username"
-              value={storyUsername}
-              onChange={(event) => setStoryUsername(event.target.value)}
-            />
-          </label>
-          <button
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-bold text-ink transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-70 sm:h-14 sm:px-6 sm:text-base"
-            disabled={loading}
-            type="submit"
-          >
-            <Download size={18} />
-            {loading ? 'Loading...' : 'Load profile'}
-          </button>
-        </div>
-      </form>
-
-      <div className="grid gap-4">
-        <div className="grid gap-3">
-          <h2 className="text-xl font-black text-white">Stories</h2>
-          {storyCard || (
-            <div className="rounded-2xl border border-white/10 bg-white/8 p-4 text-sm text-slate-400">
-              {storyError || 'Load a username to check active stories.'}
-            </div>
-          )}
-        </div>
-
-        <div className="grid gap-3">
-          <h2 className="text-xl font-black text-white">Reels</h2>
-          {reelsCard || (
-            <div className="rounded-2xl border border-white/10 bg-white/8 p-4 text-sm text-slate-400">
-              {reelsError || 'Supported reels appear here after the username is loaded.'}
-            </div>
-          )}
-        </div>
-
-        <div className="grid gap-3">
-          <h2 className="text-xl font-black text-white">Profile media</h2>
-          {profileCard || (
-            <div className="rounded-2xl border border-white/10 bg-white/8 p-4 text-sm text-slate-400">
-              {profileError || 'Supported profile media appears here after the username is loaded.'}
-            </div>
-          )}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 const pagePaths = {
   home: '/',
-  stories: '/instagram-story-downloader',
   'how-to-use': '/how-to-use',
   contact: '/contact'
 };
@@ -353,31 +251,6 @@ export default function App({ initialPage = 'home' }) {
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState(null);
   const [selectedPlatform, setSelectedPlatform] = useState(SUPPORTED_PLATFORMS[0]);
-  const [storyUsername, setStoryUsername] = useState('');
-  const [storyInfo, setStoryInfo] = useState(null);
-  const [reelsInfo, setReelsInfo] = useState(null);
-  const [profileInfo, setProfileInfo] = useState(null);
-  const [storyError, setStoryError] = useState('');
-  const [reelsError, setReelsError] = useState('');
-  const [profileError, setProfileError] = useState('');
-  const [storyQuality, setStoryQuality] = useState('best');
-  const [reelsQuality, setReelsQuality] = useState('best');
-  const [profileQuality, setProfileQuality] = useState('best');
-  const [storyType, setStoryType] = useState('video');
-  const [reelsType, setReelsType] = useState('video');
-  const [profileType, setProfileType] = useState('video');
-  const [storyVideoFormat, setStoryVideoFormat] = useState('mp4');
-  const [reelsVideoFormat, setReelsVideoFormat] = useState('mp4');
-  const [profileVideoFormat, setProfileVideoFormat] = useState('mp4');
-  const [storyResult, setStoryResult] = useState(null);
-  const [reelsResult, setReelsResult] = useState(null);
-  const [profileResult, setProfileResult] = useState(null);
-  const [storyDownloading, setStoryDownloading] = useState(false);
-  const [reelsDownloading, setReelsDownloading] = useState(false);
-  const [profileDownloading, setProfileDownloading] = useState(false);
-  const [storyProgress, setStoryProgress] = useState(0);
-  const [reelsProgress, setReelsProgress] = useState(0);
-  const [profileProgress, setProfileProgress] = useState(0);
   const [user, setUser] = useState(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
@@ -422,36 +295,6 @@ export default function App({ initialPage = 'home' }) {
 
     return () => window.clearInterval(timer);
   }, [downloading]);
-
-  useEffect(() => {
-    if (!storyDownloading) return undefined;
-
-    const timer = window.setInterval(() => {
-      setStoryProgress((current) => (current >= 92 ? current : current + Math.ceil(Math.random() * 8)));
-    }, 700);
-
-    return () => window.clearInterval(timer);
-  }, [storyDownloading]);
-
-  useEffect(() => {
-    if (!reelsDownloading) return undefined;
-
-    const timer = window.setInterval(() => {
-      setReelsProgress((current) => (current >= 92 ? current : current + Math.ceil(Math.random() * 8)));
-    }, 700);
-
-    return () => window.clearInterval(timer);
-  }, [reelsDownloading]);
-
-  useEffect(() => {
-    if (!profileDownloading) return undefined;
-
-    const timer = window.setInterval(() => {
-      setProfileProgress((current) => (current >= 92 ? current : current + Math.ceil(Math.random() * 8)));
-    }, 700);
-
-    return () => window.clearInterval(timer);
-  }, [profileDownloading]);
 
   useEffect(() => {
     let mounted = true;
@@ -519,128 +362,6 @@ export default function App({ initialPage = 'home' }) {
       notifyError('Could not load video', error.message);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleInstagramUsernameAnalyze = async (event) => {
-    event.preventDefault();
-
-    const username = normalizeInstagramUsernameInput(storyUsername);
-
-    if (!instagramUsernamePattern.test(username)) {
-      notifyError('Invalid username', 'Enter a valid public Instagram username or profile URL.');
-      return;
-    }
-
-    const storyUrl = `https://www.instagram.com/stories/${username}/`;
-
-    setLoading(true);
-    setStoryResult(null);
-    setReelsResult(null);
-    setProfileResult(null);
-    setStoryInfo(null);
-    setReelsInfo(null);
-    setProfileInfo(null);
-    setStoryError('');
-    setReelsError('');
-    setProfileError('');
-    setUrl(storyUrl);
-    setSelectedPlatform(SUPPORTED_PLATFORMS.find((platform) => platform.label === 'Instagram Reels') || SUPPORTED_PLATFORMS[0]);
-
-    try {
-      const data = await fetchInstagramProfileMedia(username);
-      const sections = data.sections || {};
-      const applySection = ({ section, setInfo, setError, setQuality, setType, setFormat, fallback }) => {
-        if (section?.ok && section.info) {
-          setInfo(section.info);
-          setQuality('best');
-          setType('video');
-          setFormat('mp4');
-          return true;
-        }
-
-        setError(section?.message || fallback);
-        return false;
-      };
-
-      const loaded = [
-        applySection({
-          section: sections.stories,
-          setInfo: setStoryInfo,
-          setError: setStoryError,
-          setQuality: setStoryQuality,
-          setType: setStoryType,
-          setFormat: setStoryVideoFormat,
-          fallback: 'No active stories are available for this public profile.'
-        }),
-        applySection({
-          section: sections.reels,
-          setInfo: setReelsInfo,
-          setError: setReelsError,
-          setQuality: setReelsQuality,
-          setType: setReelsType,
-          setFormat: setReelsVideoFormat,
-          fallback: 'Reels could not be loaded for this profile.'
-        }),
-        applySection({
-          section: sections.profile,
-          setInfo: setProfileInfo,
-          setError: setProfileError,
-          setQuality: setProfileQuality,
-          setType: setProfileType,
-          setFormat: setProfileVideoFormat,
-          fallback: 'Profile media could not be loaded for this profile.'
-        })
-      ].filter(Boolean).length;
-
-      if (loaded) {
-        notifySuccess('Instagram profile loaded', `${loaded} section${loaded === 1 ? '' : 's'} ready below.`, 'instagram-profile');
-      } else {
-        notifyError('No media loaded', 'Instagram did not return downloadable media for this username.', 'instagram-profile');
-      }
-    } catch (error) {
-      const message = error.message || 'Instagram profile could not be loaded.';
-      setStoryError(message);
-      setReelsError(message);
-      setProfileError(message);
-      notifyError('Could not load profile', message, 'instagram-profile');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleInstagramDownload = async ({
-    info: targetInfo,
-    type: targetType,
-    quality: targetQuality,
-    videoFormat: targetVideoFormat,
-    setTargetResult,
-    setTargetDownloading,
-    setTargetProgress
-  }) => {
-    if (!targetInfo) return;
-
-    setTargetDownloading(true);
-    setTargetResult(null);
-    setTargetProgress(8);
-
-    try {
-      const data = await requestDownload({
-        url: targetInfo.url,
-        type: targetType,
-        quality: targetQuality,
-        format: targetVideoFormat
-      });
-      setTargetProgress(100);
-      setTargetResult(data);
-      notifySuccess('File ready', 'Save it, then share Mediazy with friends.');
-    } catch (error) {
-      notifyError('Download failed', error.message);
-    } finally {
-      window.setTimeout(() => {
-        setTargetDownloading(false);
-        setTargetProgress(0);
-      }, 600);
     }
   };
 
@@ -805,87 +526,6 @@ export default function App({ initialPage = 'home' }) {
 
         {activePage === 'contact' && (
           <ContactPage onStart={() => navigateTo('home')} />
-        )}
-
-        {activePage === 'stories' && (
-          <InstagramStoriesPage
-            storyUsername={storyUsername}
-            setStoryUsername={setStoryUsername}
-            onAnalyze={handleInstagramUsernameAnalyze}
-            loading={loading}
-            storyError={storyError}
-            reelsError={reelsError}
-            profileError={profileError}
-            storyCard={storyInfo && (
-              <DownloadCard
-                info={storyInfo}
-                quality={storyQuality}
-                setQuality={setStoryQuality}
-                type={storyType}
-                setType={setStoryType}
-                videoFormat={storyVideoFormat}
-                setVideoFormat={setStoryVideoFormat}
-                onDownload={() => handleInstagramDownload({
-                  info: storyInfo,
-                  type: storyType,
-                  quality: storyQuality,
-                  videoFormat: storyVideoFormat,
-                  setTargetResult: setStoryResult,
-                  setTargetDownloading: setStoryDownloading,
-                  setTargetProgress: setStoryProgress
-                })}
-                downloading={storyDownloading}
-                progress={storyProgress}
-                result={storyResult}
-              />
-            )}
-            reelsCard={reelsInfo && (
-              <DownloadCard
-                info={reelsInfo}
-                quality={reelsQuality}
-                setQuality={setReelsQuality}
-                type={reelsType}
-                setType={setReelsType}
-                videoFormat={reelsVideoFormat}
-                setVideoFormat={setReelsVideoFormat}
-                onDownload={() => handleInstagramDownload({
-                  info: reelsInfo,
-                  type: reelsType,
-                  quality: reelsQuality,
-                  videoFormat: reelsVideoFormat,
-                  setTargetResult: setReelsResult,
-                  setTargetDownloading: setReelsDownloading,
-                  setTargetProgress: setReelsProgress
-                })}
-                downloading={reelsDownloading}
-                progress={reelsProgress}
-                result={reelsResult}
-              />
-            )}
-            profileCard={profileInfo && (
-              <DownloadCard
-                info={profileInfo}
-                quality={profileQuality}
-                setQuality={setProfileQuality}
-                type={profileType}
-                setType={setProfileType}
-                videoFormat={profileVideoFormat}
-                setVideoFormat={setProfileVideoFormat}
-                onDownload={() => handleInstagramDownload({
-                  info: profileInfo,
-                  type: profileType,
-                  quality: profileQuality,
-                  videoFormat: profileVideoFormat,
-                  setTargetResult: setProfileResult,
-                  setTargetDownloading: setProfileDownloading,
-                  setTargetProgress: setProfileProgress
-                })}
-                downloading={profileDownloading}
-                progress={profileProgress}
-                result={profileResult}
-              />
-            )}
-          />
         )}
 
         {activePage === 'home' && (

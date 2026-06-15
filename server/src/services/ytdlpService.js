@@ -128,12 +128,6 @@ const readInstagramCookies = async () => (
   readCookiesForDomain(/(^|\.)instagram\.com$/i)
 );
 
-const instagramCookieHeader = async () => (
-  (await readInstagramCookies())
-    .map((cookie) => `${cookie.name}=${cookie.value}`)
-    .join('; ')
-);
-
 export const getInstagramCookieStatus = async () => {
   const cookies = await readInstagramCookies();
   const names = new Set(cookies.map((cookie) => cookie.name));
@@ -186,33 +180,6 @@ const youtubeOptionVariants = [
   {}
 ];
 
-const instagramUsernamePattern = /^[A-Za-z0-9._]{1,30}$/;
-
-const normalizeInstagramUsername = (value = '') => {
-  const input = String(value).trim().replace(/^@+/, '');
-  let username = input;
-
-  try {
-    const parsed = new URL(input.includes('://') ? input : `https://${input}`);
-    if (/(^|\.)instagram\.com$/i.test(parsed.hostname.replace(/^www\./i, ''))) {
-      const [firstPathPart, secondPathPart] = parsed.pathname.split('/').filter(Boolean);
-      username = firstPathPart?.toLowerCase() === 'stories' ? secondPathPart || '' : firstPathPart || '';
-    }
-  } catch {
-    username = input;
-  }
-
-  username = username.replace(/^@+/, '').trim();
-
-  if (!instagramUsernamePattern.test(username)) {
-    const error = new Error('Enter a valid Instagram username.');
-    error.statusCode = 400;
-    throw error;
-  }
-
-  return username;
-};
-
 const isYouTubeUrl = (url) => {
   try {
     const hostname = new URL(url).hostname.replace(/^www\./i, '');
@@ -231,184 +198,14 @@ const isInstagramCollectionUrl = (url) => {
     const parsed = new URL(url);
     const hostname = parsed.hostname.replace(/^www\./i, '');
     const pathname = parsed.pathname.toLowerCase();
-    const pathParts = pathname.split('/').filter(Boolean);
-    const isReservedStoryPath = pathParts[0] === 'stories' && pathParts[1] === `high${'lights'}`;
 
     return /(^|\.)instagram\.com$/i.test(hostname) &&
       (
-        (pathname.startsWith('/stories/') && !isReservedStoryPath) ||
         /^\/[A-Za-z0-9._]+\/?$/.test(parsed.pathname) ||
         /^\/[A-Za-z0-9._]+\/reels?\/?$/.test(parsed.pathname)
       );
   } catch {
     return false;
-  }
-};
-
-const instagramUsernameFromUrl = (url) => {
-  const parsed = new URL(url);
-  return parsed.pathname.split('/').filter(Boolean)[0] || '';
-};
-
-const instagramStoryUsernameFromUrl = (url) => {
-  const parsed = new URL(url);
-  const parts = parsed.pathname.split('/').filter(Boolean);
-  return parts[0]?.toLowerCase() === 'stories' ? parts[1] || '' : '';
-};
-
-const instagramHeaders = async () => {
-  const cookie = await instagramCookieHeader();
-  return {
-    'user-agent': process.env.YTDLP_USER_AGENT || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
-    'x-ig-app-id': '936619743392459',
-    'x-asbd-id': '129477',
-    'x-requested-with': 'XMLHttpRequest',
-    ...(cookie ? { cookie } : {})
-  };
-};
-
-const isInstagramStoriesUsernameUrl = (url) => {
-  try {
-    const parsed = new URL(url);
-    const hostname = parsed.hostname.replace(/^www\./i, '');
-    const pathParts = parsed.pathname.toLowerCase().split('/').filter(Boolean);
-    const isReservedStoryPath = pathParts[0] === 'stories' && pathParts[1] === `high${'lights'}`;
-
-    return /(^|\.)instagram\.com$/i.test(hostname) &&
-      parsed.pathname.toLowerCase().startsWith('/stories/') &&
-      !isReservedStoryPath &&
-      Boolean(instagramStoryUsernameFromUrl(url));
-  } catch {
-    return false;
-  }
-};
-
-const instagramErrorMessage = (status) => {
-  if (status === 400 || status === 404) {
-    return 'Instagram username was not found or is invalid.';
-  }
-
-  if (status === 401 || status === 403 || status === 429) {
-    return 'Instagram blocked this server session. Refresh YTDLP_COOKIES_BASE64 with logged-in Instagram cookies and try again.';
-  }
-
-  return 'Instagram could not be reached right now. Try again in a moment.';
-};
-
-const fetchInstagramJson = async (url) => {
-  const response = await fetch(url, { headers: await instagramHeaders() });
-  if (!response.ok) {
-    const error = new Error(`Instagram returned ${response.status}`);
-    error.statusCode = response.status === 404 ? 404 : undefined;
-    error.publicMessage = instagramErrorMessage(response.status);
-    throw error;
-  }
-  return response.json();
-};
-
-const getInstagramProfile = async (username) => {
-  const profile = await fetchInstagramJson(`https://www.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(username)}`);
-  const user = profile?.data?.user;
-  const userId = user?.id;
-
-  if (!userId) {
-    const error = new Error('Instagram user was not found.');
-    error.statusCode = 404;
-    error.publicMessage = 'Instagram username was not found or this profile cannot be viewed by the server session.';
-    throw error;
-  }
-
-  if (user.is_private) {
-    const error = new Error('Instagram account is private.');
-    error.statusCode = 403;
-    error.publicMessage = 'This Instagram account is private. Only public profiles can be fetched.';
-    throw error;
-  }
-
-  return { profile, user, userId };
-};
-
-const mediaFromReelItem = (item, fallbackName) => {
-  const video = item.video_versions?.[0];
-  const image = item.image_versions2?.candidates?.[0];
-  const mediaUrl = video?.url || image?.url;
-  if (!mediaUrl) return null;
-
-  return {
-    id: item.id || fallbackName,
-    url: mediaUrl,
-    extension: video ? 'mp4' : 'jpg',
-    thumbnail: image?.url || mediaUrl
-  };
-};
-
-const resolveInstagramReelItems = async (reelId) => {
-  const data = await fetchInstagramJson(`https://www.instagram.com/api/v1/feed/reels_media/?reel_ids=${encodeURIComponent(reelId)}`);
-  const reel = data.reels?.[reelId] || data.reels_media?.[0] || data.tray?.[0] || {};
-  return (reel.items || [])
-    .map((item, index) => mediaFromReelItem(item, `${reelId}-${index + 1}`))
-    .filter(Boolean);
-};
-
-const resolveInstagramStoriesForProfile = async ({ username, userId }) => {
-  const items = await resolveInstagramReelItems(userId);
-
-  if (!items.length) {
-    const error = new Error('No active Instagram stories found.');
-    error.statusCode = 404;
-    error.publicMessage = 'No active stories are available for this public profile.';
-    throw error;
-  }
-
-  return {
-    username,
-    title: `Story by ${username}`,
-    thumbnail: items[0]?.thumbnail,
-    items
-  };
-};
-
-const resolveInstagramStories = async (url) => {
-  const username = normalizeInstagramUsername(instagramStoryUsernameFromUrl(url));
-  const { userId } = await getInstagramProfile(username);
-  return resolveInstagramStoriesForProfile({ username, userId });
-};
-
-const resolveDirectInstagramCollection = async (url) => {
-  if (isInstagramStoriesUsernameUrl(url)) {
-    return resolveInstagramStories(url);
-  }
-
-  return null;
-};
-
-const mediaInfoFromInstagramCollection = ({ target, url, platform, shortForm }) => ({
-  id: target.username,
-  url,
-  platform,
-  title: target.title,
-  thumbnail: target.thumbnail,
-  duration: null,
-  durationText: 'Multiple items',
-  uploader: target.username,
-  webpageUrl: `https://www.instagram.com/${target.username}/`,
-  isShortForm: shortForm,
-  isCollection: true,
-  entryCount: target.items.length,
-  qualities: [{ label: 'Best available', value: 'best' }],
-  hasSubtitles: false,
-  automaticCaptions: false
-});
-
-const sectionResult = async (factory) => {
-  try {
-    const info = await factory();
-    return { ok: true, info };
-  } catch (error) {
-    return {
-      ok: false,
-      message: error.publicMessage || error.message || 'This section could not be loaded.'
-    };
   }
 };
 
@@ -595,6 +392,9 @@ const runYtdlpWithFallbacks = async ({ url, platform, options }) => {
         ...extraOptions,
         ...variant,
         ...ytdlpOptions
+      }, {
+        timeout: intFromEnv('YTDLP_PROCESS_TIMEOUT_MS', 65000),
+        maxBuffer: 30 * 1024 * 1024
       });
     } catch (error) {
       lastError = error;
@@ -610,11 +410,6 @@ const runYtdlpWithFallbacks = async ({ url, platform, options }) => {
 };
 
 export const fetchMediaInfo = async ({ url, platform }) => {
-  if (isInstagramStoriesUsernameUrl(url)) {
-    const target = await resolveInstagramStories(url);
-    return mediaInfoFromInstagramCollection({ target, url, platform, shortForm: true });
-  }
-
   let info;
 
   try {
@@ -660,34 +455,6 @@ export const fetchMediaInfo = async ({ url, platform }) => {
       : [{ label: 'Best available', value: 'best' }],
     hasSubtitles: Boolean(info.subtitles && Object.keys(info.subtitles).length),
     automaticCaptions: Boolean(info.automatic_captions && Object.keys(info.automatic_captions).length)
-  };
-};
-
-export const fetchInstagramProfileMedia = async ({ username: rawUsername }) => {
-  const username = normalizeInstagramUsername(rawUsername);
-  const { userId } = await getInstagramProfile(username);
-  const storyUrl = `https://www.instagram.com/stories/${username}/`;
-  const reelsUrl = `https://www.instagram.com/${username}/reels/`;
-  const profileUrl = `https://www.instagram.com/${username}/`;
-
-  const [stories, reels, profile] = await Promise.all([
-    sectionResult(async () => mediaInfoFromInstagramCollection({
-      target: await resolveInstagramStoriesForProfile({ username, userId }),
-      url: storyUrl,
-      platform: 'Instagram Stories',
-      shortForm: true
-    })),
-    sectionResult(() => fetchMediaInfo({ url: reelsUrl, platform: 'Instagram Reels' })),
-    sectionResult(() => fetchMediaInfo({ url: profileUrl, platform: 'Instagram' }))
-  ]);
-
-  return {
-    username,
-    sections: {
-      stories,
-      reels,
-      profile
-    }
   };
 };
 
@@ -783,29 +550,9 @@ const writeZip = async ({ files, outputPath }) => {
   await fs.writeFile(outputPath, Buffer.concat([...localParts, ...centralParts, endHeader]));
 };
 
-const downloadDirectInstagramItems = async ({ items, fileBase }) => {
-  const headers = await instagramHeaders();
-
-  return Promise.all(items.map(async (item, index) => {
-    const fileName = `${fileBase}-${String(index + 1).padStart(3, '0')}-${sanitize(item.id || 'instagram')}.${item.extension}`;
-    const filePath = path.join(downloadsDir, fileName);
-    const response = await fetch(item.url, { headers });
-
-    if (!response.ok) {
-      const error = new Error(`Instagram media returned ${response.status}`);
-      error.publicMessage = 'Instagram returned the story list, but blocked one of the media files during download. Refresh the cookies and try again.';
-      throw error;
-    }
-
-    await fs.writeFile(filePath, Buffer.from(await response.arrayBuffer()));
-    return fileName;
-  }));
-};
-
 export const createDownload = async ({ url, platform, type, quality, format = 'mp4', title, publicBaseUrl }) => {
   const videoFormat = ['mp4', 'webm', 'mkv'].includes(format) ? format : 'mp4';
   const isCollection = isInstagramCollectionUrl(url);
-  const directInstagramTarget = await resolveDirectInstagramCollection(url);
   const collectionUrls = [url];
   let extension = videoFormat;
   let ytdlpOptions = {};
@@ -854,23 +601,16 @@ export const createDownload = async ({ url, platform, type, quality, format = 'm
     ? path.join(downloadsDir, `${fileBase}-%(playlist_index)03d-%(id)s.%(ext)s`)
     : path.join(downloadsDir, requestedFileName);
 
-  if (directInstagramTarget) {
-    await downloadDirectInstagramItems({
-      items: directInstagramTarget.items,
-      fileBase
+  for (const collectionUrl of collectionUrls) {
+    await runYtdlpWithFallbacks({
+      url: collectionUrl,
+      platform,
+      options: {
+        ...ytdlpOptions,
+        ...(isCollection ? { allowPlaylist: true } : {}),
+        output: outputTemplate
+      }
     });
-  } else {
-    for (const collectionUrl of collectionUrls) {
-      await runYtdlpWithFallbacks({
-        url: collectionUrl,
-        platform,
-        options: {
-          ...ytdlpOptions,
-          ...(isCollection ? { allowPlaylist: true } : {}),
-          output: outputTemplate
-        }
-      });
-    }
   }
 
   const filesAfterDownload = await fs.readdir(downloadsDir);
@@ -878,8 +618,8 @@ export const createDownload = async ({ url, platform, type, quality, format = 'm
 
   if (isCollection) {
     if (!matchingFiles.length) {
-      const error = new Error('No story media was found.');
-      error.publicMessage = 'No active story media was found. Instagram may require a logged-in server session even for public profiles.';
+      const error = new Error('No media was found.');
+      error.publicMessage = 'No media was found for this Instagram link.';
       throw error;
     }
 
