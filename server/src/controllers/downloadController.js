@@ -4,7 +4,7 @@ import { addDownloadJob, getDownloadJob, getDownloadQueueEvents, isDownloadQueue
 import { cacheKey, getCachedJson, setCachedJson } from '../services/cacheService.js';
 import { listHistory, recordDownload } from '../services/historyService.js';
 import { createDownload, fetchInstagramProfileMedia, fetchMediaInfo, getCookieStatus, getInstagramCookieStatus } from '../services/ytdlpService.js';
-import { downloadsDir } from '../utils/files.js';
+import { downloadsDir, publicBaseUrlFromRequest } from '../utils/files.js';
 import { parseSupportedUrl } from '../utils/platform.js';
 
 const allowedTypes = new Set(['video', 'audio', 'subtitles', 'thumbnail']);
@@ -85,7 +85,8 @@ export const downloadMedia = async (req, res, next) => {
       quality,
       format,
       ipAddress: req.ip,
-      userAgent: req.get('user-agent')
+      userAgent: req.get('user-agent'),
+      publicBaseUrl: publicBaseUrlFromRequest(req)
     };
 
     if (req.user) {
@@ -119,7 +120,8 @@ export const executeDownload = async ({
   format,
   user,
   ipAddress,
-  userAgent
+  userAgent,
+  publicBaseUrl
 }) => {
   const quota = getUnlimitedQuota();
   const key = cacheKey('info', url, platform);
@@ -136,7 +138,8 @@ export const executeDownload = async ({
     type,
     quality,
     format,
-    title: info.title
+    title: info.title,
+    publicBaseUrl
   });
 
   await recordDownload({

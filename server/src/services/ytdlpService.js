@@ -802,7 +802,7 @@ const downloadDirectInstagramItems = async ({ items, fileBase }) => {
   }));
 };
 
-export const createDownload = async ({ url, platform, type, quality, format = 'mp4', title }) => {
+export const createDownload = async ({ url, platform, type, quality, format = 'mp4', title, publicBaseUrl }) => {
   const videoFormat = ['mp4', 'webm', 'mkv'].includes(format) ? format : 'mp4';
   const isCollection = isInstagramCollectionUrl(url);
   const directInstagramTarget = await resolveDirectInstagramCollection(url);
@@ -904,7 +904,9 @@ export const createDownload = async ({ url, platform, type, quality, format = 'm
   return {
     fileName: generatedFile,
     fileSize: stat.size,
-    downloadUrl: publicDownloadUrl(generatedFile),
+    downloadUrl: publicBaseUrl
+      ? `${publicBaseUrl.replace(/\/$/, '')}/api/files/${encodeURIComponent(generatedFile)}`
+      : publicDownloadUrl(generatedFile),
     expiresInMinutes: Number(process.env.DOWNLOAD_TTL_MINUTES || 10)
   };
 };

@@ -20,3 +20,23 @@ export const publicDownloadUrl = (fileName) => {
 
   return `${process.env.PUBLIC_BASE_URL.replace(/\/$/, '')}${downloadPath}`;
 };
+
+export const publicBaseUrlFromRequest = (req) => {
+  const configuredBaseUrl = (process.env.PUBLIC_BASE_URL || '').trim();
+
+  if (configuredBaseUrl && !/^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?\/?$/i.test(configuredBaseUrl)) {
+    return configuredBaseUrl.replace(/\/$/, '');
+  }
+
+  const forwardedHost = req.get('x-forwarded-host');
+  const host = forwardedHost ? forwardedHost.split(',')[0].trim() : req.get('host');
+
+  if (!host) {
+    return configuredBaseUrl.replace(/\/$/, '');
+  }
+
+  const forwardedProto = req.get('x-forwarded-proto');
+  const protocol = forwardedProto ? forwardedProto.split(',')[0].trim() : req.protocol;
+
+  return `${protocol}://${host}`;
+};

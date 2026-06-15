@@ -1,7 +1,25 @@
 import axios from 'axios';
 
+const configuredApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+
+const isLocalhostUrl = (value) => /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?\/?$/i.test(value);
+
+const resolveApiBaseUrl = () => {
+  if (typeof window === 'undefined') {
+    return configuredApiBaseUrl;
+  }
+
+  const isLocalPage = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
+
+  if (!isLocalPage && isLocalhostUrl(configuredApiBaseUrl)) {
+    return '';
+  }
+
+  return configuredApiBaseUrl;
+};
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000',
+  baseURL: resolveApiBaseUrl(),
   timeout: 180000
 });
 
