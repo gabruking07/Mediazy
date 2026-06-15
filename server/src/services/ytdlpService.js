@@ -354,7 +354,7 @@ const publicYtdlpError = (error, platform = 'This platform') => {
   }
 
   if (/private|members-only|login required|sign in|cookies|not authorized|forbidden|confirm you.?re not a bot/i.test(rawMessage)) {
-    return `${platform} needs a logged-in server session for this request, or the platform is blocking this server as automated traffic. Refresh the server cookies and try again.`;
+    return `${platform} blocked this server request. Refresh server cookies or use a residential proxy, then try again.`;
   }
 
   if (/unavailable|removed|deleted|does not exist|not found|copyright/i.test(lowerMessage)) {

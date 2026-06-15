@@ -30,9 +30,11 @@ export const getVideoInfo = async (req, res, next) => {
 
     res.json(info);
   } catch (error) {
-    error.publicMessage = error.statusCode
-      ? error.message
-      : error.publicMessage || 'Unable to read this video. Check the URL and try again.';
+    error.publicMessage = error.publicMessage || (
+      error.statusCode
+        ? error.message
+        : 'Unable to read this video. Check the URL and try again.'
+    );
     next(error);
   }
 };
@@ -86,9 +88,11 @@ export const downloadMedia = async (req, res, next) => {
 
     res.json({ ...result, jobId: job.id });
   } catch (error) {
-    error.publicMessage = error.statusCode
-      ? error.message
-      : error.publicMessage || 'Download failed. The platform may be blocking this media or the format is unavailable.';
+    error.publicMessage = error.publicMessage || (
+      error.statusCode
+        ? error.message
+        : 'Download failed. The platform may be blocking this media or the format is unavailable.'
+    );
     next(error);
   }
 };
