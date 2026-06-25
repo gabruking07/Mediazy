@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { MarketingShell } from "@/components/marketing-shell";
-import { MotionSection } from "@/components/motion-section";
-import { ToolCard } from "@/components/tool-card";
-import { categories, tools } from "@/lib/tools/registry";
+import { Button } from "@/client/components/ui/button";
+import { Card, CardContent } from "@/client/components/ui/card";
+import { MarketingShell } from "@/client/components/marketing-shell";
+import { MotionSection } from "@/client/components/motion-section";
+import { ToolCard } from "@/client/components/tool-card";
+import { categories, tools } from "@/shared/tools/registry";
 
 const features = [
   "Privacy-friendly browser workflows",

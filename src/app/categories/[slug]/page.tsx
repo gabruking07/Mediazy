@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { MarketingShell } from "@/components/marketing-shell";
-import { ToolCard } from "@/components/tool-card";
-import { categories, getCategory, getToolsByCategory } from "@/lib/tools/registry";
+import { MarketingShell } from "@/client/components/marketing-shell";
+import { ToolCard } from "@/client/components/tool-card";
+import { categories, getCategory, getToolsByCategory } from "@/shared/tools/registry";
 
 type Props = {
   params: Promise<{ slug: string }>;

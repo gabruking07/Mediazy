@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Mail } from "lucide-react";
-import { MarketingShell } from "@/components/marketing-shell";
-import { brand } from "@/lib/brand";
+import { MarketingShell } from "@/client/components/marketing-shell";
+import { brand } from "@/shared/brand";
 
 export const metadata: Metadata = {
   title: "Contact",

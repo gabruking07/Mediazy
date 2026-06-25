@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { MarketingShell } from "@/components/marketing-shell";
-import { Badge } from "@/components/ui/badge";
-import { ToolPanel } from "@/tools/shared/tool-panel";
-import { brand } from "@/lib/brand";
-import { getTool, tools } from "@/lib/tools/registry";
+import { MarketingShell } from "@/client/components/marketing-shell";
+import { Badge } from "@/client/components/ui/badge";
+import { ToolPanel } from "@/client/tools/shared/tool-panel";
+import { brand } from "@/shared/brand";
+import { getTool, tools } from "@/shared/tools/registry";
 
 type Props = {
   params: Promise<{ slug: string }>;

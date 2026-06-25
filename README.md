@@ -18,6 +18,14 @@ Mediazy is created and owned by Aurex Technologies.
 - React Hook Form
 - Zod
 
+## Project Structure
+
+- `src/app` - Next.js App Router pages and API route entrypoints
+- `src/client` - UI components, client state, and browser tool modules
+- `src/server` - Auth, Prisma, and email/server-only code
+- `src/shared` - Brand constants, shared utilities, and tool metadata
+- `prisma` - MongoDB Atlas Prisma schema
+
 ## Getting Started
 
 ```bash

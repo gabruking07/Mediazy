@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { MarketingShell } from "@/components/marketing-shell";
-import { ToolCard } from "@/components/tool-card";
-import { tools } from "@/lib/tools/registry";
+import { MarketingShell } from "@/client/components/marketing-shell";
+import { ToolCard } from "@/client/components/tool-card";
+import { tools } from "@/shared/tools/registry";
 
 export const metadata: Metadata = {
   title: "Tools",

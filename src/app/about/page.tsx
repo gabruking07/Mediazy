@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { MarketingShell } from "@/components/marketing-shell";
+import { MarketingShell } from "@/client/components/marketing-shell";
 
 export const metadata: Metadata = {
   title: "About",

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { DashboardClient } from "@/components/dashboard-client";
-import { brand } from "@/lib/brand";
-import { authOptions } from "@/lib/auth";
+import { DashboardClient } from "@/client/components/dashboard-client";
+import { brand } from "@/shared/brand";
+import { authOptions } from "@/server/lib/auth";
 
 export const metadata: Metadata = {
   title: "Dashboard",

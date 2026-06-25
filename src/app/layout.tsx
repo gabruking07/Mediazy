@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { brand, defaultDescription } from "@/lib/brand";
-import { absoluteUrl } from "@/lib/utils";
-import { Analytics } from "@/components/analytics";
-import { Providers } from "@/components/providers";
+import { brand, defaultDescription } from "@/shared/brand";
+import { absoluteUrl } from "@/shared/utils";
+import { Analytics } from "@/client/components/analytics";
+import { Providers } from "@/client/components/providers";
 import "./globals.css";
 
 export const metadata: Metadata = {

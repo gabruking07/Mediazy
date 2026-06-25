@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
-import { brand } from "@/lib/brand";
-import { categories, tools } from "@/lib/tools/registry";
+import { brand } from "@/shared/brand";
+import { categories, tools } from "@/shared/tools/registry";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = brand.url;
