@@ -11,7 +11,7 @@ Mediazy is created and owned by Aurex Technologies.
 - Tailwind CSS
 - shadcn/ui-style components
 - Framer Motion
-- Prisma and PostgreSQL
+- Prisma and MongoDB Atlas
 - NextAuth
 - UploadThing
 - Zustand
@@ -28,6 +28,12 @@ npm run dev
 ```
 
 Set `DATABASE_URL`, `NEXTAUTH_SECRET`, Google OAuth values, and UploadThing credentials before deploying.
+
+For MongoDB Atlas, `DATABASE_URL` should look like:
+
+```bash
+mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/mediazy?retryWrites=true&w=majority
+```
 
 ## Deployment
 
