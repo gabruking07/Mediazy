@@ -5,6 +5,7 @@ import { ReactNode, useEffect } from "react";
 import { Button } from "@/client/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/client/components/ui/card";
 import { useToolStore } from "@/client/store/use-tool-store";
+import { useToast } from "@/client/components/ui/toast";
 
 type ToolPanelProps = {
   slug: string;
@@ -16,6 +17,7 @@ type ToolPanelProps = {
 
 export function ToolPanel({ slug, title, description, children, actions }: ToolPanelProps) {
   const { favorites, markRecent, toggleFavorite } = useToolStore();
+  const { toast } = useToast();
   const isFavorite = favorites.includes(slug);
 
   useEffect(() => {
@@ -34,7 +36,14 @@ export function ToolPanel({ slug, title, description, children, actions }: ToolP
             type="button"
             variant={isFavorite ? "default" : "outline"}
             size="sm"
-            onClick={() => toggleFavorite(slug)}
+            onClick={() => {
+              toggleFavorite(slug);
+              toast({
+                type: isFavorite ? "info" : "success",
+                title: isFavorite ? "Removed from favorites" : "Added to favorites",
+                description: isFavorite ? `${title} was removed from your saved tools.` : `${title} is now saved in your dashboard.`
+              });
+            }}
             aria-label={isFavorite ? "Remove favorite" : "Add favorite"}
           >
             <Heart className="size-4" />

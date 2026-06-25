@@ -10,6 +10,7 @@ import { z } from "zod";
 import { Button } from "@/client/components/ui/button";
 import { Input } from "@/client/components/ui/input";
 import { Label } from "@/client/components/ui/label";
+import { useToast } from "@/client/components/ui/toast";
 
 const loginSchema = z.object({
   name: z.string().optional(),
@@ -21,6 +22,7 @@ type LoginValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
   const router = useRouter();
+  const { toast } = useToast();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [message, setMessage] = useState("");
   const form = useForm<LoginValues>({
@@ -38,9 +40,20 @@ export function LoginForm() {
       });
       if (!response.ok) {
         const data = (await response.json()) as { message?: string };
-        setMessage(data.message ?? "Could not create account.");
+        const errorMessage = data.message ?? "Could not create account.";
+        setMessage(errorMessage);
+        toast({
+          type: "error",
+          title: "Account creation failed",
+          description: errorMessage
+        });
         return;
       }
+      toast({
+        type: "success",
+        title: "Account created",
+        description: "Signing you into your Mediazy workspace."
+      });
     }
 
     const result = await signIn("credentials", {
@@ -51,9 +64,19 @@ export function LoginForm() {
 
     if (result?.error) {
       setMessage("Invalid email or password.");
+      toast({
+        type: "error",
+        title: "Login failed",
+        description: "Check your email and password, then try again."
+      });
       return;
     }
 
+    toast({
+      type: "success",
+      title: "Welcome to Mediazy",
+      description: "Opening your dashboard."
+    });
     router.push("/dashboard");
     router.refresh();
   }
