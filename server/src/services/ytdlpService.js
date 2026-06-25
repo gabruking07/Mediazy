@@ -50,8 +50,10 @@ const pickProxy = () => {
 
 const ytdlpBaseOptions = {
   noWarnings: true,
+  noUpdate: true,
   preferFreeFormats: true,
   noPlaylist: true,
+  jsRuntimes: process.env.YTDLP_JS_RUNTIMES || 'node',
   forceIpv4: boolFromEnv('YTDLP_FORCE_IPV4', true),
   socketTimeout: intFromEnv('YTDLP_SOCKET_TIMEOUT_SECONDS', 30),
   retries: intFromEnv('YTDLP_RETRIES', 5),
@@ -167,6 +169,7 @@ const runtimeOptions = async () => {
     ...(cookies ? { cookies } : {}),
     ...(proxy ? { proxy } : {}),
     ...(process.env.YTDLP_USER_AGENT ? { userAgent: process.env.YTDLP_USER_AGENT } : {}),
+    ...optionalStringOption('YTDLP_FFMPEG_LOCATION', 'ffmpegLocation'),
     ...optionalIntOption('YTDLP_SLEEP_REQUESTS_SECONDS', 'sleepRequests'),
     ...optionalIntOption('YTDLP_SLEEP_INTERVAL_SECONDS', 'sleepInterval'),
     ...optionalIntOption('YTDLP_MAX_SLEEP_INTERVAL_SECONDS', 'maxSleepInterval')
@@ -604,9 +607,15 @@ export const createDownload = async ({ url, platform, type, quality, format = 'm
       convertThumbnails: 'jpg'
     };
   } else {
-    const formatSelector = quality && quality !== 'best'
-      ? `bestvideo[height<=${quality}][ext=${videoFormat}]+bestaudio[ext=m4a]/bestvideo[height<=${quality}][ext=${videoFormat}]+bestaudio/best[height<=${quality}][ext=${videoFormat}]/best[height<=${quality}]/best`
-      : `bestvideo[ext=${videoFormat}]+bestaudio[ext=m4a]/bestvideo[ext=${videoFormat}]+bestaudio/best[ext=${videoFormat}]/best`;
+    const heightFilter = quality && quality !== 'best' ? `[height<=${quality}]` : '';
+    const formatSelector = [
+      `best[vcodec!=none][acodec!=none]${heightFilter}[ext=${videoFormat}]`,
+      `best[vcodec!=none][acodec!=none]${heightFilter}`,
+      `best${heightFilter}`,
+      `bestvideo${heightFilter}[ext=${videoFormat}]+bestaudio[ext=m4a]`,
+      `bestvideo${heightFilter}+bestaudio`,
+      'best'
+    ].join('/');
 
     ytdlpOptions = {
       format: formatSelector,
@@ -622,7 +631,8 @@ export const createDownload = async ({ url, platform, type, quality, format = 'm
   const fileBase = requestedFileName.replace(/\.[^.]+$/, '');
   const outputTemplate = isCollection
     ? path.join(downloadsDir, `${fileBase}-%(playlist_index)03d-%(id)s.%(ext)s`)
-    : path.join(downloadsDir, requestedFileName);
+    : path.join(downloadsDir, `${fileBase}.%(ext)s`);
+  const filesBeforeDownload = new Set(await fs.readdir(downloadsDir));
 
   for (const collectionUrl of collectionUrls) {
     await runYtdlpWithFallbacks({
@@ -638,6 +648,7 @@ export const createDownload = async ({ url, platform, type, quality, format = 'm
 
   const filesAfterDownload = await fs.readdir(downloadsDir);
   const matchingFiles = filesAfterDownload.filter((file) => file.startsWith(fileBase) && file !== requestedFileName);
+  const newMatchingFiles = filesAfterDownload.filter((file) => file.startsWith(fileBase) && !filesBeforeDownload.has(file));
 
   if (isCollection) {
     if (!matchingFiles.length) {
@@ -657,10 +668,15 @@ export const createDownload = async ({ url, platform, type, quality, format = 'm
     await Promise.all(matchingFiles.map((file) => fs.remove(path.join(downloadsDir, file))));
   }
 
-  const refreshedFiles = isCollection ? filesAfterDownload : await fs.readdir(downloadsDir);
+  const refreshedFiles = isCollection ? [requestedFileName] : await fs.readdir(downloadsDir);
+  const generatedFiles = (newMatchingFiles.length ? newMatchingFiles : refreshedFiles)
+    .filter((file) => file.startsWith(fileBase));
+  const preferredGeneratedFile = generatedFiles.find((file) => file === requestedFileName) ||
+    generatedFiles.find((file) => file.endsWith(`.${extension}`)) ||
+    generatedFiles[0];
   const generatedFile = isCollection
     ? requestedFileName
-    : refreshedFiles.find((file) => file.startsWith(fileBase)) || requestedFileName;
+    : preferredGeneratedFile || requestedFileName;
   const finalPath = path.join(downloadsDir, generatedFile);
   const stat = await fs.stat(finalPath);
 

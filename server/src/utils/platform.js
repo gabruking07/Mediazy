@@ -4,6 +4,9 @@ const platformMatchers = [
   { platform: 'Facebook', regex: /(^|\.)((facebook\.com)|(fb\.watch))$/i },
   { platform: 'TikTok', regex: /(^|\.)tiktok\.com$/i },
   { platform: 'Twitter/X', regex: /(^|\.)(twitter\.com|x\.com)$/i },
+  { platform: 'Vimeo', regex: /(^|\.)vimeo\.com$/i },
+  { platform: 'Dailymotion', regex: /(^|\.)dailymotion\.com$/i },
+  { platform: 'Reddit', regex: /(^|\.)reddit\.com$/i },
   { platform: 'Video', regex: /.+/ }
 ];
 

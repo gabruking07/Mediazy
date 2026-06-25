@@ -111,10 +111,18 @@ export const executeDownload = async ({
   const quota = getUnlimitedQuota();
   const key = cacheKey('info', url, platform);
   const cached = await getCachedJson(key);
-  const info = cached || await fetchMediaInfo({ url, platform });
+  let info = cached;
 
-  if (!cached) {
-    await setCachedJson(key, info);
+  if (!info) {
+    try {
+      info = await fetchMediaInfo({ url, platform });
+      await setCachedJson(key, info);
+    } catch (error) {
+      console.warn('Video info lookup failed, continuing with direct download:', error.publicMessage || error.message);
+      info = {
+        title: `${platform || 'Video'} download`
+      };
+    }
   }
 
   const result = await createDownload({

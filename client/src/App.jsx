@@ -43,6 +43,18 @@ const SUPPORTED_PLATFORMS = [
     label: 'Twitter/X',
     hosts: ['twitter.com', 'www.twitter.com', 'mobile.twitter.com', 'x.com', 'www.x.com'],
   },
+  {
+    label: 'Vimeo',
+    hosts: ['vimeo.com', 'www.vimeo.com', 'player.vimeo.com'],
+  },
+  {
+    label: 'Dailymotion',
+    hosts: ['dailymotion.com', 'www.dailymotion.com', 'dai.ly'],
+  },
+  {
+    label: 'Reddit',
+    hosts: ['reddit.com', 'www.reddit.com', 'old.reddit.com', 'redd.it'],
+  },
 ];
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
