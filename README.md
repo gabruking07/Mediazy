@@ -62,10 +62,13 @@ Build command: `npm run build`
 
 ### Render
 
-Create a Blueprint from `render.yaml` or a Web Service connected to the same repository.
+Create a normal Web Service connected to `https://github.com/gabruking07/Mediazy`.
 
-Build command: `npm install && npm run build`
+Use these settings:
 
-Start command: `npm run start`
+- Runtime: `Node`
+- Build command: `npm install && npm run build`
+- Start command: `npm run start`
+- Root directory: leave empty
 
 Set the same environment variables listed above. For Render, `NEXTAUTH_URL` and `NEXT_PUBLIC_APP_URL` should use the Render service URL or your custom domain.
