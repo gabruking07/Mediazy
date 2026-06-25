@@ -4,7 +4,10 @@ import type { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { z } from "zod";
+import { loadServerEnv } from "@/server/lib/env";
 import { prisma } from "@/server/lib/prisma";
+
+loadServerEnv();
 
 const credentialsSchema = z.object({
   email: z.string().email(),
