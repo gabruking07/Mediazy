@@ -6,7 +6,7 @@ Mediazy is created and owned by Aurex Technologies.
 
 ## Stack
 
-- Next.js 15 App Router
+- Next.js 16 App Router
 - TypeScript
 - Tailwind CSS
 - shadcn/ui-style components
@@ -37,6 +37,20 @@ npm run dev
 ```
 
 Set `DATABASE_URL`, `NEXTAUTH_SECRET`, Google OAuth values, and UploadThing credentials before deploying.
+
+Environment files are split by responsibility:
+
+- `src/server/.env.example` - server-only secrets such as database, auth, Google OAuth, and UploadThing.
+- `src/client/.env.example` - public browser-safe values. Only put `NEXT_PUBLIC_*` variables here.
+- `.env.example` - combined local template for Next.js local development.
+
+For local development, copy the combined file:
+
+```bash
+cp .env.example .env
+```
+
+For Vercel and Render, add the same values in the platform Environment Variables UI.
 
 For MongoDB Atlas, `DATABASE_URL` should look like:
 
