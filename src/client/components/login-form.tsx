@@ -26,6 +26,7 @@ export function LoginForm() {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [message, setMessage] = useState("");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { name: "", email: "", password: "" }
@@ -78,6 +79,7 @@ export function LoginForm() {
       title: "Welcome to Mediazy",
       description: "Opening your dashboard."
     });
+    setIsNavigating(true);
     router.push("/dashboard");
     router.refresh();
   }
@@ -85,6 +87,7 @@ export function LoginForm() {
   function continueWithGoogle() {
     setMessage("");
     setIsGoogleLoading(true);
+    setIsNavigating(true);
     toast({
       type: "info",
       title: "Opening Google",
@@ -93,9 +96,11 @@ export function LoginForm() {
     void signIn("google", { callbackUrl: "/dashboard" });
   }
 
-  const isBusy = form.formState.isSubmitting || isGoogleLoading;
+  const isBusy = form.formState.isSubmitting || isGoogleLoading || isNavigating;
 
   return (
+    <>
+    {isNavigating ? <AuthLoadingOverlay mode={isGoogleLoading ? "google" : "email"} /> : null}
     <form onSubmit={form.handleSubmit(submit)} className="space-y-4">
       {mode === "register" ? (
         <div className="space-y-2">
@@ -131,5 +136,25 @@ export function LoginForm() {
         {mode === "login" ? "Create an account" : "Already have an account? Login"}
       </Button>
     </form>
+    </>
+  );
+}
+
+function AuthLoadingOverlay({ mode }: { mode: "email" | "google" }) {
+  return (
+    <div className="fixed inset-0 z-[120] grid place-items-center bg-slate-950/82 p-4 text-white backdrop-blur-xl">
+      <div className="w-full max-w-sm rounded-xl border border-white/10 bg-white/[0.06] p-6 text-center shadow-premium">
+        <div className="mx-auto grid size-14 place-items-center rounded-full border border-white/10 bg-primary/20">
+          <Loader2 className="size-7 animate-spin text-primary" />
+        </div>
+        <h2 className="mt-5 text-xl font-semibold">{mode === "google" ? "Connecting to Google" : "Opening dashboard"}</h2>
+        <p className="mt-2 text-sm text-slate-300">
+          Secure sign-in is finishing. This can take a few seconds on the first request.
+        </p>
+        <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/10">
+          <div className="h-full w-1/2 animate-pulse rounded-full bg-primary" />
+        </div>
+      </div>
+    </div>
   );
 }
