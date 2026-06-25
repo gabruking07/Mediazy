@@ -73,6 +73,11 @@ export default function DownloadCard({
           </div>
           <h2 className="break-words text-lg font-black leading-tight text-white sm:text-xl md:text-2xl">{info.title}</h2>
           {info.uploader && <p className="mt-2 break-words text-sm text-slate-400">{info.uploader}</p>}
+          {info.previewUnavailable && (
+            <p className="mt-2 rounded-lg border border-amber-400/20 bg-amber-400/10 px-3 py-2 text-sm leading-6 text-amber-100">
+              Preview is unavailable for this link. Direct download may still work if the site allows server downloads.
+            </p>
+          )}
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">

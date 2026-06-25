@@ -17,15 +17,40 @@ const getUnlimitedQuota = () => ({
   unlimited: true
 });
 
+const buildDirectDownloadInfo = ({ url, platform }) => ({
+  id: url,
+  url,
+  platform,
+  title: `${platform || 'Video'} direct download`,
+  thumbnail: null,
+  duration: null,
+  durationText: 'Unknown',
+  uploader: null,
+  webpageUrl: url,
+  isShortForm: false,
+  isCollection: false,
+  entryCount: 0,
+  qualities: [{ label: 'Best available', value: 'best' }],
+  hasSubtitles: false,
+  automaticCaptions: false,
+  previewUnavailable: true
+});
+
 export const getVideoInfo = async (req, res, next) => {
   try {
     const { normalizedUrl, platform } = parseSupportedUrl(req.body.url);
     const key = cacheKey('info', normalizedUrl, platform);
     const cached = await getCachedJson(key);
-    const info = cached || await fetchMediaInfo({ url: normalizedUrl, platform });
+    let info = cached;
 
-    if (!cached) {
-      await setCachedJson(key, info);
+    if (!info) {
+      try {
+        info = await fetchMediaInfo({ url: normalizedUrl, platform });
+        await setCachedJson(key, info);
+      } catch (error) {
+        console.warn('Video preview failed, allowing direct download:', error.publicMessage || error.message);
+        info = buildDirectDownloadInfo({ url: normalizedUrl, platform });
+      }
     }
 
     res.json(info);

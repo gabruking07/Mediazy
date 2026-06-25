@@ -8,6 +8,7 @@ RUN apt-get update \
 
 COPY package*.json ./
 RUN npm install --omit=dev
+RUN ./node_modules/yt-dlp-exec/bin/yt-dlp -U || true
 
 COPY src ./src
 COPY downloads ./downloads

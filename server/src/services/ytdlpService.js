@@ -356,8 +356,16 @@ const publicYtdlpError = (error, platform = 'This platform') => {
     return 'That quality or format is not available for this media. Try Best available or another format.';
   }
 
+  if (/confirm you.?re not a bot|use --cookies-from-browser|use --cookies/i.test(rawMessage)) {
+    return `${platform} is asking this server to prove it is not automated. Add fresh cookies or use a residential proxy, then try again.`;
+  }
+
   if (/private|members-only|login required|sign in|cookies|not authorized|forbidden|confirm you.?re not a bot/i.test(rawMessage)) {
     return `${platform} blocked this server request. Refresh server cookies or use a residential proxy, then try again.`;
+  }
+
+  if (/extractor error|keyerror|confirm you are on the latest version|please report this issue/i.test(rawMessage)) {
+    return 'This site changed its video page and the extractor failed. Update yt-dlp on the server, then retry the link.';
   }
 
   if (/unavailable|removed|deleted|does not exist|not found|copyright/i.test(lowerMessage)) {
@@ -385,6 +393,10 @@ const ytdlpStatusCode = (error) => {
 
   if (/private|members-only|login required|sign in|cookies|not authorized|forbidden|confirm you.?re not a bot/i.test(rawMessage)) {
     return 403;
+  }
+
+  if (/extractor error|keyerror|confirm you are on the latest version|please report this issue/i.test(rawMessage)) {
+    return 502;
   }
 
   if (/unavailable|removed|deleted|does not exist|not found|copyright/i.test(rawMessage)) {

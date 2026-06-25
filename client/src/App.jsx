@@ -83,6 +83,27 @@ function detectPlatform(value) {
   }
 }
 
+function buildDirectDownloadInfo(value) {
+  const detectedPlatform = detectPlatform(value) || SUPPORTED_PLATFORMS[0];
+
+  return {
+    id: value,
+    url: value,
+    platform: detectedPlatform.label,
+    title: `${detectedPlatform.label} direct download`,
+    thumbnail: null,
+    durationText: 'Unknown',
+    uploader: null,
+    isShortForm: false,
+    isCollection: false,
+    entryCount: 0,
+    qualities: [{ label: 'Best available', value: 'best' }],
+    hasSubtitles: false,
+    automaticCaptions: false,
+    previewUnavailable: true
+  };
+}
+
 function NotificationToast({ id, type, title, message }) {
   const isSuccess = type === 'success';
   const Icon = isSuccess ? CheckCircle2 : XCircle;
@@ -370,8 +391,10 @@ export default function App({ initialPage = 'home' }) {
       }
       notifySuccess('Video details loaded', 'Choose your format and quality, then download.');
     } catch (error) {
-      setInfo(null);
-      notifyError('Could not load video', error.message);
+      setInfo(buildDirectDownloadInfo(url.trim()));
+      setQuality('best');
+      setVideoFormat('mp4');
+      notifyError('Preview unavailable', `${error.message} You can still try direct download.`);
     } finally {
       setLoading(false);
     }
