@@ -12,10 +12,10 @@ const config: Config = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#2563EB",
+          DEFAULT: "#3B6CFF",
           foreground: "#FFFFFF"
         },
-        dark: "#0F172A",
+        dark: "#05070F",
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))"
@@ -26,7 +26,8 @@ const config: Config = {
         }
       },
       boxShadow: {
-        premium: "0 24px 80px -40px rgba(15, 23, 42, 0.35)"
+        premium: "0 30px 90px -45px rgba(0, 0, 0, 0.85)",
+        glow: "0 0 0 1px rgba(59, 108, 255, 0.25), 0 20px 60px -24px rgba(59, 108, 255, 0.6)"
       },
       fontFamily: {
         sans: ["var(--font-geist-sans)", "Inter", "system-ui", "sans-serif"],

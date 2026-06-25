@@ -4,62 +4,78 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 221 83% 53%;
+    --background: 225 50% 4%;
+    --foreground: 213 31% 96%;
+    --card: 222 44% 7%;
+    --card-foreground: 213 31% 96%;
+    --muted: 217 33% 12%;
+    --muted-foreground: 215 22% 68%;
+    --border: 216 34% 16%;
+    --input: 216 34% 16%;
+    --ring: 224 90% 62%;
   }
 
   .dark {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 98%;
-    --muted: 217 33% 14%;
-    --muted-foreground: 215 20% 72%;
-    --border: 217 33% 18%;
-    --input: 217 33% 18%;
-    --ring: 221 83% 58%;
+    --background: 225 50% 4%;
+    --foreground: 213 31% 96%;
+    --card: 222 44% 7%;
+    --card-foreground: 213 31% 96%;
+    --muted: 217 33% 12%;
+    --muted-foreground: 215 22% 68%;
+    --border: 216 34% 16%;
+    --input: 216 34% 16%;
+    --ring: 224 90% 62%;
   }
 
   * {
     @apply border-border;
   }
 
+  html {
+    color-scheme: dark;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
+    background-image:
+      radial-gradient(60rem 60rem at 80% -10%, rgba(59, 108, 255, 0.1), transparent 55%),
+      radial-gradient(50rem 50rem at -10% 10%, rgba(34, 211, 238, 0.07), transparent 55%);
+    background-attachment: fixed;
   }
 }
 
 @layer utilities {
   .mediazy-grid {
     background-image:
-      linear-gradient(to right, rgba(148, 163, 184, 0.12) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+      linear-gradient(to right, rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(148, 163, 184, 0.1) 1px, transparent 1px);
     background-size: 44px 44px;
   }
 
   .mediazy-spotlight {
     background-image:
-      linear-gradient(135deg, rgba(37, 99, 235, 0.18), transparent 38%),
-      linear-gradient(225deg, rgba(20, 184, 166, 0.14), transparent 36%),
-      linear-gradient(0deg, rgba(15, 23, 42, 1), rgba(15, 23, 42, 1));
+      linear-gradient(135deg, rgba(59, 108, 255, 0.22), transparent 40%),
+      linear-gradient(225deg, rgba(34, 211, 238, 0.16), transparent 38%),
+      linear-gradient(0deg, hsl(var(--background)), hsl(var(--background)));
   }
 
   .glass-panel {
-    @apply border border-white/10 bg-white/[0.06] shadow-premium backdrop-blur-xl;
+    @apply border border-white/10 bg-white/[0.04] shadow-premium backdrop-blur-xl;
+  }
+
+  .glass-card {
+    @apply border border-white/10 bg-white/[0.03] backdrop-blur-md;
   }
 
   .aurora-text {
-    background: linear-gradient(92deg, #ffffff 0%, #bfdbfe 32%, #67e8f9 58%, #fed7aa 100%);
+    background: linear-gradient(95deg, #ffffff 0%, #c7d6ff 30%, #7aa2ff 55%, #67e8f9 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 40px rgba(59, 108, 255, 0.45);
   }
 
   .magic-border {
@@ -72,8 +88,8 @@
     inset: -1px;
     z-index: -1;
     border-radius: inherit;
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.7), rgba(20, 184, 166, 0.45), rgba(249, 115, 22, 0.35));
-    opacity: 0.8;
+    background: linear-gradient(135deg, rgba(59, 108, 255, 0.8), rgba(34, 211, 238, 0.5), rgba(59, 108, 255, 0.2));
+    opacity: 0.9;
   }
 
   .shine {
@@ -86,7 +102,7 @@
     position: absolute;
     inset: 0;
     transform: translateX(-120%);
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
     animation: shine 5s ease-in-out infinite;
   }
 
