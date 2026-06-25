@@ -2,6 +2,7 @@ import { ArrowLeft, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LoginForm } from "@/client/components/login-form";
+import { PremiumBackground } from "@/client/components/premium-background";
 import { brand } from "@/shared/brand";
 
 export const metadata: Metadata = {
@@ -13,8 +14,8 @@ export const metadata: Metadata = {
 export default function LoginPage() {
   return (
     <main className="min-h-screen bg-dark px-4 py-8 text-white">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(37,99,235,0.25),transparent_30%),radial-gradient(circle_at_80%_10%,rgba(20,184,166,0.15),transparent_26%)]" />
-      <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] shadow-premium backdrop-blur-xl lg:grid-cols-[1fr_460px]">
+      <PremiumBackground />
+      <div className="magic-border relative mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl overflow-hidden rounded-xl bg-white/[0.03] shadow-premium backdrop-blur-xl lg:grid-cols-[1fr_460px]">
         <section className="hidden p-8 lg:flex lg:flex-col lg:justify-between">
           <Link href="/" className="inline-flex items-center gap-2 text-sm text-slate-300 hover:text-white">
             <ArrowLeft className="size-4" />
@@ -25,7 +26,7 @@ export default function LoginPage() {
               <Sparkles className="size-4 text-primary" />
               Built by {brand.company}
             </div>
-            <h1 className="max-w-xl text-5xl font-semibold tracking-tight">Your tools, rewards, and workflow in one calm command center.</h1>
+            <h1 className="aurora-text max-w-xl text-5xl font-semibold tracking-tight">Your tools, rewards, and workflow in one calm command center.</h1>
             <div className="mt-8 grid max-w-lg grid-cols-2 gap-3">
               <LoginStat icon={Zap} label="Earn XP for meaningful actions" />
               <LoginStat icon={ShieldCheck} label="Private browser-first utilities" />

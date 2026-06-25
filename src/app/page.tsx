@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/client/components/ui/card";
 import { AnimatedWorkflow } from "@/client/components/animated-workflow";
 import { MarketingShell } from "@/client/components/marketing-shell";
 import { MotionSection } from "@/client/components/motion-section";
+import { PremiumBackground } from "@/client/components/premium-background";
 import { ToolCard } from "@/client/components/tool-card";
 import { categories, tools } from "@/shared/tools/registry";
 
@@ -29,23 +30,22 @@ export default function Home() {
   return (
     <MarketingShell>
       <main>
-        <section className="mediazy-spotlight relative overflow-hidden border-b border-slate-800 text-white">
-          <div className="mediazy-grid absolute inset-0 opacity-40" />
-          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent" />
+        <section className="relative overflow-hidden border-b border-slate-800 bg-slate-950 text-white">
+          <PremiumBackground />
           <div className="relative mx-auto grid min-h-[720px] max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.02fr_0.98fr]">
             <div>
-              <div className="mb-6 inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-3 py-1 text-sm text-slate-300 backdrop-blur">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/10 px-3 py-1 text-sm text-slate-200 shadow-2xl backdrop-blur">
                 <Sparkles className="size-4 text-primary" />
-                A premium tools suite by Aurex Technologies
+                Beautiful tools, rewards, and workflows by Aurex Technologies
               </div>
-              <h1 className="max-w-4xl text-5xl font-semibold tracking-tight sm:text-6xl lg:text-7xl">
+              <h1 className="aurora-text max-w-4xl text-5xl font-semibold tracking-tight sm:text-6xl lg:text-7xl">
                 Mediazy turns everyday tools into a daily workspace.
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
                 Convert files, format developer data, generate secure utilities, earn XP, collect coins, and keep momentum inside one polished ecosystem.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Button asChild size="lg">
+                <Button asChild size="lg" className="shine shadow-[0_20px_60px_-24px_rgba(37,99,235,0.9)]">
                   <Link href="/tools">
                     Explore tools <ArrowRight className="size-4" />
                   </Link>
@@ -60,8 +60,9 @@ export default function Home() {
                 <HeroMetric icon={Coins} label="XP" value="Rewards" />
               </div>
             </div>
-            <div className="glass-panel rounded-lg p-3">
-              <div className="rounded-md border border-white/10 bg-slate-950/80">
+            <div className="magic-border rounded-xl">
+            <div className="glass-panel rounded-xl p-3">
+              <div className="overflow-hidden rounded-lg border border-white/10 bg-slate-950/82">
                 <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
                   <div className="flex items-center gap-2 text-sm text-slate-300">
                     <Search className="size-4" />
@@ -71,6 +72,18 @@ export default function Home() {
                 </div>
                 <div className="p-3">
                   <AnimatedWorkflow />
+                </div>
+                <div className="grid grid-cols-3 gap-2 px-3 pb-3">
+                  {[
+                    ["Lucide", "UI Icons"],
+                    ["Iconify", "Brand Logos"],
+                    ["Lottie", "Motion"]
+                  ].map(([value, label]) => (
+                    <div key={value} className="rounded-md border border-white/10 bg-white/[0.04] p-3 text-center">
+                      <p className="text-sm font-semibold text-white">{value}</p>
+                      <p className="mt-1 text-[11px] text-slate-500">{label}</p>
+                    </div>
+                  ))}
                 </div>
                 <div className="grid gap-2 p-3 pt-0">
                   {popularTools.slice(0, 4).map((tool, index) => (
@@ -93,10 +106,12 @@ export default function Home() {
                 </div>
               </div>
             </div>
+            </div>
           </div>
         </section>
 
-        <MotionSection className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
+        <MotionSection className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6">
+          <div className="absolute inset-x-4 top-10 -z-10 h-72 rounded-[32px] bg-[radial-gradient(circle_at_20%_20%,rgba(37,99,235,0.10),transparent_35%),radial-gradient(circle_at_80%_20%,rgba(20,184,166,0.10),transparent_35%)]" />
           <div className="mb-10 max-w-2xl">
             <p className="text-sm font-medium text-primary">Features</p>
             <h2 className="mt-2 text-3xl font-semibold tracking-tight">A toolkit that feels alive, not like a folder of links.</h2>
@@ -116,7 +131,7 @@ export default function Home() {
           </div>
         </MotionSection>
 
-        <MotionSection className="border-y border-border bg-muted/45 py-20">
+        <MotionSection className="border-y border-border bg-[linear-gradient(180deg,hsl(var(--muted))_0%,transparent_100%)] py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="mb-10 flex items-end justify-between gap-4">
               <div>
@@ -132,7 +147,7 @@ export default function Home() {
                 const Icon = categoryIcons[index] ?? Blocks;
                 return (
                 <Link key={category.slug} href={category.href} className="group rounded-lg border border-border bg-background p-5 transition hover:-translate-y-1 hover:shadow-premium">
-                  <span className="grid size-11 place-items-center rounded-lg bg-muted text-primary transition group-hover:bg-primary group-hover:text-white">
+                  <span className="grid size-11 place-items-center rounded-lg bg-primary/10 text-primary transition group-hover:bg-primary group-hover:text-white">
                     <Icon className="size-5" />
                   </span>
                   <h3 className="mt-5 font-semibold">{category.name}</h3>
@@ -154,7 +169,8 @@ export default function Home() {
         </MotionSection>
 
         <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
-          <div className="mediazy-spotlight overflow-hidden rounded-lg border border-slate-800 px-6 py-12 text-white shadow-premium sm:px-10">
+          <div className="relative overflow-hidden rounded-xl border border-slate-800 bg-slate-950 px-6 py-12 text-white shadow-premium sm:px-10">
+            <PremiumBackground className="opacity-80" />
             <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
               <div>
             <h2 className="text-3xl font-semibold tracking-tight">Start with the tool you need. Return for the ecosystem.</h2>

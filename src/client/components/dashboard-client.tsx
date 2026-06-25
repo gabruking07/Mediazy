@@ -9,6 +9,7 @@ import type { EcosystemDashboard } from "@/server/ecosystem/dashboard-service";
 import { Button } from "@/client/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/client/components/ui/card";
 import { Input } from "@/client/components/ui/input";
+import { PremiumBackground } from "@/client/components/premium-background";
 import { ToolCard } from "@/client/components/tool-card";
 import { brand } from "@/shared/brand";
 import { searchTools, tools } from "@/shared/tools/registry";
@@ -48,7 +49,9 @@ export function DashboardClient({ user, ecosystem }: { user: DashboardUser; ecos
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+      <div className="relative overflow-hidden">
+        <PremiumBackground className="opacity-30" />
+      <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6">
         <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
           <aside className="space-y-4">
             <Card className="overflow-hidden bg-dark text-white shadow-premium">
@@ -216,6 +219,7 @@ export function DashboardClient({ user, ecosystem }: { user: DashboardUser; ecos
             )}
           </section>
         </div>
+      </div>
       </div>
     </>
   );
