@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Chrome } from "lucide-react";
+import { Chrome, Loader2 } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -25,6 +25,7 @@ export function LoginForm() {
   const { toast } = useToast();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [message, setMessage] = useState("");
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { name: "", email: "", password: "" }
@@ -81,33 +82,52 @@ export function LoginForm() {
     router.refresh();
   }
 
+  function continueWithGoogle() {
+    setMessage("");
+    setIsGoogleLoading(true);
+    toast({
+      type: "info",
+      title: "Opening Google",
+      description: "Secure sign-in can take a few seconds."
+    });
+    void signIn("google", { callbackUrl: "/dashboard" });
+  }
+
+  const isBusy = form.formState.isSubmitting || isGoogleLoading;
+
   return (
     <form onSubmit={form.handleSubmit(submit)} className="space-y-4">
       {mode === "register" ? (
         <div className="space-y-2">
           <Label htmlFor="name">Name</Label>
-          <Input id="name" {...form.register("name")} />
+          <Input id="name" disabled={isBusy} {...form.register("name")} />
         </div>
       ) : null}
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
-        <Input id="email" type="email" autoComplete="email" {...form.register("email")} />
+        <Input id="email" type="email" autoComplete="email" disabled={isBusy} {...form.register("email")} />
         {form.formState.errors.email ? <p className="text-xs text-red-500">{form.formState.errors.email.message}</p> : null}
       </div>
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
-        <Input id="password" type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} {...form.register("password")} />
+        <Input id="password" type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} disabled={isBusy} {...form.register("password")} />
         {form.formState.errors.password ? <p className="text-xs text-red-500">{form.formState.errors.password.message}</p> : null}
       </div>
       {message ? <p className="text-sm text-red-500">{message}</p> : null}
-      <Button type="submit" className="w-full">
-        {mode === "login" ? "Login with email" : "Create account"}
+      {isBusy ? (
+        <p className="rounded-md border border-border bg-muted px-3 py-2 text-center text-sm text-muted-foreground" aria-live="polite">
+          {isGoogleLoading ? "Connecting to Google..." : mode === "login" ? "Signing in..." : "Creating your workspace..."}
+        </p>
+      ) : null}
+      <Button type="submit" className="w-full" disabled={isBusy}>
+        {form.formState.isSubmitting ? <Loader2 className="size-4 animate-spin" /> : null}
+        {form.formState.isSubmitting ? (mode === "login" ? "Signing in..." : "Creating account...") : mode === "login" ? "Login with email" : "Create account"}
       </Button>
-      <Button type="button" variant="outline" className="w-full" onClick={() => void signIn("google", { callbackUrl: "/dashboard" })}>
-        <Chrome className="size-4" />
-        Continue with Google
+      <Button type="button" variant="outline" className="w-full" onClick={continueWithGoogle} disabled={isBusy}>
+        {isGoogleLoading ? <Loader2 className="size-4 animate-spin" /> : <Chrome className="size-4" />}
+        {isGoogleLoading ? "Connecting to Google..." : "Continue with Google"}
       </Button>
-      <Button type="button" variant="link" className="w-full" onClick={() => setMode(mode === "login" ? "register" : "login")}>
+      <Button type="button" variant="link" className="w-full" disabled={isBusy} onClick={() => setMode(mode === "login" ? "register" : "login")}>
         {mode === "login" ? "Create an account" : "Already have an account? Login"}
       </Button>
     </form>
