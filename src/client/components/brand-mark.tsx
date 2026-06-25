@@ -1,12 +1,11 @@
-import { Sparkles } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@/shared/utils";
 
 export function BrandMark({ compact = false, className }: { compact?: boolean; className?: string }) {
   return (
     <span className={cn("inline-flex items-center gap-2 font-semibold tracking-tight", className)}>
-      <span className="relative grid size-9 place-items-center overflow-hidden rounded-lg bg-dark text-white shadow-premium">
-        <span className="absolute inset-0 bg-[linear-gradient(135deg,#2563EB_0%,#14B8A6_52%,#F97316_100%)]" />
-        <Sparkles className="relative size-4" />
+      <span className="relative grid size-9 place-items-center overflow-hidden rounded-lg bg-white shadow-premium">
+        <Image src="/assets/mediazy-logo.png" alt="Mediazy" width={36} height={36} className="size-full object-contain" priority />
       </span>
       {compact ? null : <span>Mediazy</span>}
     </span>

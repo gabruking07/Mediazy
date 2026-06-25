@@ -1,8 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, BadgeCheck, Blocks, CheckCircle2, Coins, Flame, ImageIcon, Rocket, Search, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/client/components/ui/button";
 import { Card, CardContent } from "@/client/components/ui/card";
-import { AnimatedWorkflow } from "@/client/components/animated-workflow";
 import { MarketingShell } from "@/client/components/marketing-shell";
 import { MotionSection } from "@/client/components/motion-section";
 import { PremiumBackground } from "@/client/components/premium-background";
@@ -70,8 +70,23 @@ export default function Home() {
                   </div>
                   <span className="rounded-md border border-white/10 px-2 py-1 text-xs text-slate-400">Mediazy Pro</span>
                 </div>
-                <div className="p-3">
-                  <AnimatedWorkflow />
+                <div className="relative mx-3 my-3 overflow-hidden rounded-lg border border-white/10 bg-[linear-gradient(135deg,rgba(37,99,235,0.22),rgba(15,23,42,0.95)_45%,rgba(20,184,166,0.18))] p-6">
+                  <div className="absolute inset-0 mediazy-grid opacity-25" />
+                  <div className="relative flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm text-slate-400">Workspace health</p>
+                      <p className="mt-2 text-3xl font-semibold text-white">94%</p>
+                      <p className="mt-2 text-sm text-slate-400">Tools, rewards, and activity synced.</p>
+                    </div>
+                    <div className="grid size-24 place-items-center rounded-2xl bg-white shadow-2xl">
+                      <Image src="/assets/mediazy-logo.png" alt="Mediazy logo" width={84} height={84} className="size-20 object-contain" priority />
+                    </div>
+                  </div>
+                  <div className="relative mt-6 grid grid-cols-3 gap-3">
+                    {["Convert", "Reward", "Return"].map((item) => (
+                      <div key={item} className="rounded-md border border-white/10 bg-white/[0.06] p-3 text-center text-sm text-slate-300">{item}</div>
+                    ))}
+                  </div>
                 </div>
                 <div className="grid grid-cols-3 gap-2 px-3 pb-3">
                   {[
