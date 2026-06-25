@@ -32,6 +32,7 @@ Mediazy is created and owned by Aurex Technologies.
 npm install
 cp .env.example .env
 npm run prisma:generate
+npm run prisma:push
 npm run dev
 ```
 

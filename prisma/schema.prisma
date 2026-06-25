@@ -11,13 +11,27 @@ model User {
   id            String    @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
   email         String    @unique
+  username      String?   @unique
   emailVerified DateTime?
   image         String?
+  bio           String?
+  country       String?
+  website       String?
   passwordHash  String?
   accounts      Account[]
   sessions      Session[]
   favorites     Favorite[]
   recentTools   RecentTool[]
+  xpTransactions XPTransaction[]
+  coinTransactions CoinTransaction[]
+  achievements  UserAchievement[]
+  dailyRewards  DailyRewardClaim[]
+  dailyQuests   UserDailyQuest[]
+  notifications Notification[]
+  activities    RecentActivity[]
+  statistics    UserStatistics?
+  followers     Follow[]  @relation("following")
+  following     Follow[]  @relation("follower")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -75,4 +89,199 @@ model RecentTool {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, toolSlug])
+}
+
+model XPTransaction {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  amount    Int
+  action    XPAction
+  source    String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model CoinTransaction {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String     @db.ObjectId
+  amount    Int
+  type      CoinAction
+  source    String?
+  metadata  Json?
+  createdAt DateTime   @default(now())
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Achievement {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  slug        String   @unique
+  name        String
+  description String
+  xpReward    Int      @default(0)
+  coinReward  Int      @default(0)
+  badge       String?
+  createdAt   DateTime @default(now())
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String      @db.ObjectId
+  achievementId String      @db.ObjectId
+  progress      Int         @default(0)
+  target        Int         @default(1)
+  unlockedAt    DateTime?
+  createdAt     DateTime    @default(now())
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId, unlockedAt])
+}
+
+model DailyRewardClaim {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String      @db.ObjectId
+  day       Int
+  reward    RewardType
+  amount    Int
+  claimDate DateTime
+  createdAt DateTime    @default(now())
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, claimDate])
+  @@index([userId, createdAt])
+}
+
+model DailyQuest {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  slug        String   @unique
+  title       String
+  description String
+  target      Int
+  xpReward    Int
+  coinReward  Int
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  users       UserDailyQuest[]
+}
+
+model UserDailyQuest {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String     @db.ObjectId
+  questId     String     @db.ObjectId
+  progress    Int        @default(0)
+  completedAt DateTime?
+  questDate   DateTime
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quest       DailyQuest @relation(fields: [questId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, questId, questDate])
+  @@index([userId, questDate])
+}
+
+model Notification {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String           @db.ObjectId
+  type      NotificationType
+  title     String
+  message   String
+  readAt    DateTime?
+  metadata  Json?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+}
+
+model RecentActivity {
+  id        String       @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String       @db.ObjectId
+  type      ActivityType
+  label     String
+  metadata  Json?
+  createdAt DateTime     @default(now())
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model UserStatistics {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String   @unique @db.ObjectId
+  toolsUsed          Int      @default(0)
+  imagesConverted    Int      @default(0)
+  pdfFilesProcessed  Int      @default(0)
+  qrGenerated        Int      @default(0)
+  timeSavedSeconds   Int      @default(0)
+  storageSavedBytes  Int      @default(0)
+  longestStreak      Int      @default(0)
+  currentStreak      Int      @default(0)
+  lastLoginRewardAt  DateTime?
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Follow {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  followerId  String   @db.ObjectId
+  followingId String   @db.ObjectId
+  createdAt   DateTime @default(now())
+  follower    User     @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followingId])
+}
+
+enum XPAction {
+  LOGIN
+  USE_TOOL
+  SHARE_TOOL
+  COMPLETE_DAILY_QUEST
+  INVITE_FRIEND
+  WIN_MINI_GAME
+  UNLOCK_ACHIEVEMENT
+}
+
+enum CoinAction {
+  DAILY_LOGIN
+  DAILY_QUEST
+  ACHIEVEMENT
+  MINI_GAME
+  INVITE
+  SPECIAL_EVENT
+  ADJUSTMENT
+}
+
+enum RewardType {
+  XP
+  COINS
+  PREMIUM_TRIAL
+  BADGE
+  THEME
+}
+
+enum NotificationType {
+  ACHIEVEMENT_UNLOCKED
+  COINS_EARNED
+  QUEST_COMPLETED
+  LEVEL_UP
+  WEEKLY_SUMMARY
+  FRIEND_REQUEST
+  SYSTEM_UPDATE
+}
+
+enum ActivityType {
+  LOGIN
+  TOOL_USED
+  QUEST_COMPLETED
+  ACHIEVEMENT_UNLOCKED
+  LEVEL_UP
+  COINS_EARNED
 }

@@ -10,6 +10,7 @@ Mediazy uses a disciplined Next.js App Router structure with clear client, serve
 - `src/shared` - Brand constants, utilities, and tool registry metadata shared by pages.
 - `prisma` - Prisma schema for MongoDB Atlas.
 - `.agents` - Local automation/agent workspace marker.
+- `.vscode` - Workspace presentation settings that hide generated build folders and logs.
 
 ## Deployment
 
