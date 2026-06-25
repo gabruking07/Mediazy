@@ -21,6 +21,13 @@ export default function DownloadCard({
 
   if (!info) return null;
 
+  const qualityOptions = [
+    { label: 'Best available', value: 'best' },
+    ...(info.qualities || [])
+  ].filter((item, index, items) => (
+    index === items.findIndex((option) => option.value === item.value)
+  ));
+
   const handleShare = async () => {
     const shareUrl = window.location.origin;
     const shareText = `I used Mediazy to download media quickly. Try it here: ${shareUrl}`;
@@ -119,8 +126,7 @@ export default function DownloadCard({
               disabled={type !== 'video'}
               onChange={(event) => setQuality(event.target.value)}
             >
-              <option value="best">Best available</option>
-              {info.qualities.map((item) => (
+              {qualityOptions.map((item) => (
                 <option key={item.value} value={item.value}>
                   {item.label}
                 </option>
