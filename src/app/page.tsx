@@ -9,7 +9,6 @@ import {
   Flame,
   ImageIcon,
   Lock,
-  Play,
   Search,
   ShieldCheck,
   Sparkles,
@@ -62,12 +61,12 @@ export default function Home() {
 
   return (
     <MarketingShell>
-      <main className="overflow-hidden bg-white text-slate-950">
-        <section className="relative border-b border-slate-200 bg-[radial-gradient(circle_at_18%_20%,rgba(99,102,241,0.13),transparent_34%),radial-gradient(circle_at_84%_18%,rgba(236,72,153,0.12),transparent_30%),linear-gradient(180deg,#fff,#f8fbff)]">
+      <main className="overflow-hidden bg-white text-slate-950 dark:bg-slate-950 dark:text-slate-100">
+        <section className="relative border-b border-slate-200 bg-[radial-gradient(circle_at_18%_20%,rgba(99,102,241,0.13),transparent_34%),radial-gradient(circle_at_84%_18%,rgba(236,72,153,0.12),transparent_30%),linear-gradient(180deg,#fff,#f8fbff)] dark:border-slate-800 dark:bg-[radial-gradient(circle_at_18%_20%,rgba(124,58,237,0.18),transparent_34%),radial-gradient(circle_at_84%_18%,rgba(37,99,235,0.14),transparent_30%),linear-gradient(180deg,#020617,#0f172a)]">
           <div className="absolute inset-0 mediazy-dot-grid opacity-70" />
           <div className="relative mx-auto grid min-h-[720px] max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1fr_330px]">
             <div className="text-center lg:text-left">
-              <div className="mx-auto mb-8 inline-flex items-center gap-2 rounded-full bg-violet-50 px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-violet-100 lg:mx-0">
+              <div className="mx-auto mb-8 inline-flex items-center gap-2 rounded-full bg-violet-50 px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-violet-100 dark:bg-violet-500/10 dark:text-slate-100 dark:ring-violet-400/20 lg:mx-0">
                 <Sparkles className="size-4 text-violet-600" />
                 Smart Tools for Smart People
               </div>
@@ -75,13 +74,13 @@ export default function Home() {
                 Everything You Need, <br className="hidden sm:block" />
                 In <span className="text-gradient-purple">One</span> Place.
               </h1>
-              <p className="mx-auto mt-7 max-w-3xl text-xl leading-8 text-slate-600 lg:mx-0">
+              <p className="mx-auto mt-7 max-w-3xl text-xl leading-8 text-slate-600 dark:text-slate-300 lg:mx-0">
                 100+ free online tools to make your work easier, faster and smarter. No sign up required.
               </p>
 
-              <div className="mx-auto mt-9 flex h-16 max-w-3xl items-center gap-4 rounded-[28px] border border-violet-300 bg-white px-6 shadow-[0_24px_70px_-42px_rgba(79,70,229,0.8)] lg:mx-0">
-                <Search className="size-6 text-slate-500" />
-                <span className="min-w-0 flex-1 text-left text-lg text-slate-500">Type a command or search any tool...</span>
+              <div className="mx-auto mt-9 flex h-16 max-w-3xl items-center gap-4 rounded-[28px] border border-violet-300 bg-white px-6 shadow-[0_24px_70px_-42px_rgba(79,70,229,0.8)] dark:border-violet-400/30 dark:bg-slate-900/90 lg:mx-0">
+                <Search className="size-6 text-slate-500 dark:text-slate-400" />
+                <span className="min-w-0 flex-1 text-left text-lg text-slate-500 dark:text-slate-400">Type a command or search any tool...</span>
                 <span className="rounded-2xl bg-slate-100 px-3 py-2 text-sm font-bold text-slate-500">⌘ K</span>
               </div>
 
@@ -90,7 +89,7 @@ export default function Home() {
                   <Link
                     key={pill.label}
                     href={pill.href}
-                    className={`inline-flex h-12 items-center gap-2 rounded-full border px-5 text-sm font-bold shadow-sm transition hover:-translate-y-0.5 ${index === 0 ? "border-transparent bg-gradient-to-r from-violet-600 to-blue-600 text-white" : "border-slate-200 bg-white text-slate-950 hover:border-violet-200 hover:text-violet-700"}`}
+                    className={`inline-flex h-12 items-center gap-2 rounded-full border px-5 text-sm font-bold shadow-sm transition hover:-translate-y-0.5 ${index === 0 ? "border-transparent bg-gradient-to-r from-violet-600 to-blue-600 text-white" : "border-slate-200 bg-white text-slate-950 hover:border-violet-200 hover:text-violet-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-violet-400/50 dark:hover:text-violet-200"}`}
                   >
                     <pill.icon className="size-4" />
                     {pill.label}
@@ -100,19 +99,19 @@ export default function Home() {
             </div>
 
             <aside className="relative mx-auto hidden w-full max-w-sm lg:block">
-              <div className="absolute -top-28 left-16 grid size-36 place-items-center rounded-[32px] bg-gradient-to-br from-white to-violet-100 shadow-[0_35px_80px_-36px_rgba(79,70,229,0.9)]">
+              <div className="absolute -top-28 left-16 grid size-36 place-items-center rounded-[32px] bg-gradient-to-br from-white to-violet-100 shadow-[0_35px_80px_-36px_rgba(79,70,229,0.9)] dark:from-slate-900 dark:to-violet-950">
                 <Image src="/assets/mediazy-logo.png" alt="Mediazy logo" width={104} height={104} className="size-24 object-contain" priority />
               </div>
-              <div className="rounded-[28px] bg-white p-6 shadow-[0_28px_90px_-46px_rgba(15,23,42,0.45)] ring-1 ring-slate-100">
+              <div className="rounded-[28px] bg-white p-6 shadow-[0_28px_90px_-46px_rgba(15,23,42,0.45)] ring-1 ring-slate-100 dark:bg-slate-900 dark:ring-slate-800">
                 {rewardTasks.map(([label, title, value, progress], index) => (
-                  <div key={label} className={index === 0 ? "border-b border-slate-100 pb-7" : "pt-7"}>
-                    <p className="font-bold text-slate-950">{label}</p>
-                    <p className="mt-3 text-slate-700">{title}</p>
+                  <div key={label} className={index === 0 ? "border-b border-slate-100 pb-7 dark:border-slate-800" : "pt-7"}>
+                    <p className="font-bold text-slate-950 dark:text-slate-100">{label}</p>
+                    <p className="mt-3 text-slate-700 dark:text-slate-300">{title}</p>
                     <div className="mt-4 flex items-center justify-between">
                       <span className="font-bold text-violet-600">{index === 0 ? "+50 XP" : <Flame className="size-7 text-orange-500" />}</span>
-                      <span className="font-semibold text-slate-600">{value}</span>
+                      <span className="font-semibold text-slate-600 dark:text-slate-300">{value}</span>
                     </div>
-                    <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-100">
+                    <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                       <div className="h-full rounded-full bg-gradient-to-r from-blue-600 via-violet-600 to-fuchsia-500" style={{ width: progress }} />
                     </div>
                   </div>
@@ -124,20 +123,20 @@ export default function Home() {
 
         <section className="mx-auto grid max-w-7xl gap-6 px-4 py-12 sm:px-6 md:grid-cols-4">
           {featureStrip.map((feature) => (
-            <div key={feature.title} className="flex items-start gap-4 border-slate-200 md:border-r md:pr-6 last:border-r-0">
-              <span className="grid size-14 shrink-0 place-items-center rounded-full bg-violet-100 text-violet-600">
+            <div key={feature.title} className="flex items-start gap-4 border-slate-200 dark:border-slate-800 md:border-r md:pr-6 last:border-r-0">
+              <span className="grid size-14 shrink-0 place-items-center rounded-full bg-violet-100 text-violet-600 dark:bg-violet-500/15 dark:text-violet-200">
                 <feature.icon className="size-6" />
               </span>
               <span>
                 <span className="block font-bold">{feature.title}</span>
-                <span className="mt-2 block leading-6 text-slate-600">{feature.text}</span>
+                <span className="mt-2 block leading-6 text-slate-600 dark:text-slate-400">{feature.text}</span>
               </span>
             </div>
           ))}
         </section>
 
         <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_26px_90px_-58px_rgba(15,23,42,0.55)]">
+          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_26px_90px_-58px_rgba(15,23,42,0.55)] dark:border-slate-800 dark:bg-slate-900">
             <div className="mb-7 flex items-center justify-between gap-4">
               <h2 className="text-2xl font-black tracking-tight">Popular Tools</h2>
               <Button asChild variant="link" className="font-bold no-underline">
@@ -150,7 +149,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="border-y border-slate-200 bg-slate-50/80 py-16">
+        <section className="border-y border-slate-200 bg-slate-50/80 py-16 dark:border-slate-800 dark:bg-slate-900/45">
           <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_360px]">
             <div>
               <p className="text-sm font-bold text-violet-600">Ways to Earn XP & Coins</p>
@@ -159,7 +158,7 @@ export default function Home() {
                 {earningWays.map((way) => (
                   <Card key={way.title} className="shadow-sm">
                     <CardContent className="p-5 text-center">
-                      <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-violet-100 text-violet-600">
+                      <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-violet-100 text-violet-600 dark:bg-violet-500/15 dark:text-violet-200">
                         <way.icon className="size-6" />
                       </span>
                       <p className="mt-4 font-bold">{way.title}</p>
@@ -178,7 +177,7 @@ export default function Home() {
                 <div className="mt-5 grid gap-4">
                   {["Mediazy Pro", "Aman Verma", "Riya Shah", "Saurav Patel"].map((name, index) => (
                     <div key={name} className="flex items-center gap-3">
-                      <span className="w-5 text-sm font-bold text-slate-500">{index + 1}</span>
+                      <span className="w-5 text-sm font-bold text-slate-500 dark:text-slate-400">{index + 1}</span>
                       <span className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-violet-500 to-blue-600 text-xs font-bold text-white">{name[0]}</span>
                       <span className="min-w-0 flex-1 font-semibold">{name}</span>
                       <span className="text-sm font-bold text-violet-600">{5600 - index * 600} XP</span>
@@ -192,11 +191,11 @@ export default function Home() {
 
         <section className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
           <h2 className="text-3xl font-black tracking-tight">FAQ</h2>
-          <div className="mt-6 divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white">
+          <div className="mt-6 divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
             {faqs.map(([question, answer]) => (
               <div key={question} className="p-5">
                 <h3 className="font-bold">{question}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{answer}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{answer}</p>
               </div>
             ))}
           </div>

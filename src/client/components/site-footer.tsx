@@ -20,9 +20,9 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <FooterNav title="Quick Links" links={[["Home", "/"], ["Tools", "/tools"], ["Resources", "/about"], ["Blog", "/dashboard"], ["Pricing", "/contact"]]} />
+        <FooterNav title="Quick Links" links={[["Home", "/"], ["Tools", "/tools"], ["About", "/about"], ["Blog", "/blog"], ["Pricing", "/pricing"]]} />
         <FooterNav title="Popular Tools" links={[["PDF Merger", "/tools/merge-pdf"], ["Image Compressor", "/tools/image-compressor"], ["JPG to PNG", "/tools/jpg-to-png"], ["AI Writer", "/tools/text-case-converter"]]} />
-        <FooterNav title="Resources" links={[["Guides", "/about"], ["Help Center", "/contact"], ["Privacy Policy", "/privacy"], ["Terms of Service", "/terms"]]} />
+        <FooterNav title="About" links={[["Company", "/about"], ["Help Center", "/contact"], ["Privacy Policy", "/privacy"], ["Terms of Service", "/terms"]]} />
 
         <div className="rounded-lg border border-white/10 bg-white/[0.06] p-5">
           <p className="font-bold text-white">Stay Updated</p>
