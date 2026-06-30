@@ -64,18 +64,19 @@ export default function Home() {
       <main className="overflow-hidden bg-white text-slate-950 dark:bg-slate-950 dark:text-slate-100">
         <section className="relative border-b border-slate-200 bg-[radial-gradient(circle_at_18%_20%,rgba(99,102,241,0.13),transparent_34%),radial-gradient(circle_at_84%_18%,rgba(236,72,153,0.12),transparent_30%),linear-gradient(180deg,#fff,#f8fbff)] dark:border-slate-800 dark:bg-[radial-gradient(circle_at_18%_20%,rgba(124,58,237,0.18),transparent_34%),radial-gradient(circle_at_84%_18%,rgba(37,99,235,0.14),transparent_30%),linear-gradient(180deg,#020617,#0f172a)]">
           <div className="absolute inset-0 mediazy-dot-grid opacity-70" />
-          <div className="relative mx-auto grid min-h-[720px] max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1fr_330px]">
-            <div className="text-center lg:text-left">
-              <div className="mx-auto mb-8 inline-flex items-center gap-2 rounded-full bg-violet-50 px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-violet-100 dark:bg-violet-500/10 dark:text-slate-100 dark:ring-violet-400/20 lg:mx-0">
+          <div className="relative mx-auto grid min-h-[680px] max-w-[1320px] items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1fr_310px]">
+            <div className="text-center">
+              <div className="mx-auto mb-8 inline-flex items-center gap-2 rounded-full bg-violet-50 px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-violet-100 dark:bg-violet-500/10 dark:text-slate-100 dark:ring-violet-400/20">
                 <Sparkles className="size-4 text-violet-600" />
                 Smart Tools for Smart People
               </div>
-              <h1 className="mx-auto max-w-4xl text-5xl font-black leading-[1.05] tracking-tight sm:text-6xl lg:mx-0 lg:text-7xl">
+              <h1 className="mx-auto max-w-4xl text-5xl font-black leading-[1.08] tracking-tight sm:text-6xl lg:text-7xl">
                 Everything You Need, <br className="hidden sm:block" />
                 In <span className="text-gradient-purple">One</span> Place.
               </h1>
-              <p className="mx-auto mt-7 max-w-3xl text-xl leading-8 text-slate-600 dark:text-slate-300 lg:mx-0">
-                100+ free online tools to make your work easier, faster and smarter. No sign up required.
+              <p className="mx-auto mt-7 max-w-3xl text-xl leading-9 text-slate-600 dark:text-slate-300">
+                100+ free online tools to make your work easier, faster and smarter.<br className="hidden sm:block" />
+                No sign up required.
               </p>
 
               <div className="mx-auto mt-9 flex h-16 max-w-3xl items-center gap-4 rounded-[28px] border border-violet-300 bg-white px-6 shadow-[0_24px_70px_-42px_rgba(79,70,229,0.8)] dark:border-violet-400/30 dark:bg-slate-900/90 lg:mx-0">
