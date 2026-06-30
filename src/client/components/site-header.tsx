@@ -38,7 +38,9 @@ export function SiteHeader() {
         <nav className="hidden items-center gap-3 text-sm font-semibold text-slate-950 dark:text-slate-100 lg:flex">
           <NavLink href="/" active={pathname === "/"}>Home</NavLink>
           <NavLink href="/tools" active={pathname.startsWith("/tools")}>Tools <ChevronDown className="size-3.5" /></NavLink>
-          <NavLink href="/categories/image" active={pathname.startsWith("/categories")}>AI Tools</NavLink>
+          <NavLink href="/cloud" active={pathname === "/cloud"}>Cloud</NavLink>
+          <NavLink href="/productivity" active={pathname === "/productivity"}>Productivity</NavLink>
+          <NavLink href="/ai" active={pathname === "/ai"}>AI Tools</NavLink>
           <NavLink href="/about" active={pathname === "/about"}>About</NavLink>
           <NavLink href="/pricing" active={pathname === "/pricing"}>Pricing</NavLink>
           <NavLink href="/blog" active={pathname === "/blog"}>Blog</NavLink>

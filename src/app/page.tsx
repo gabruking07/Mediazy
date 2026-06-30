@@ -32,7 +32,7 @@ const featureStrip = [
 
 const categoryPills = [
   { label: "All Tools", icon: Blocks, href: "/tools" },
-  { label: "AI Tools", icon: Sparkles, href: "/categories/developer" },
+  { label: "AI Tools", icon: Sparkles, href: "/ai" },
   { label: "Image Tools", icon: ImageIcon, href: "/categories/image" },
   { label: "PDF Tools", icon: FileText, href: "/categories/pdf" },
   { label: "Converters", icon: ArrowRight, href: "/categories/text" },

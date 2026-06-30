@@ -15,7 +15,7 @@ const categoryLinks: Array<{
   categories?: ToolCategory[];
 }> = [
   { label: "All Tools", icon: Blocks, filter: "all" },
-  { label: "AI Tools", icon: Sparkles, filter: "ai", categories: ["developer", "text"] },
+  { label: "AI Tools", icon: Sparkles, filter: "ai", categories: [] },
   { label: "Image Tools", icon: ImageIcon, filter: "image", categories: ["image"] },
   { label: "PDF Tools", icon: FileText, filter: "pdf", categories: ["pdf"] },
   { label: "Converters", icon: Zap, filter: "converter", categories: ["image", "text"] },
@@ -113,7 +113,7 @@ export function ToolsBrowser() {
           </div>
           {visibleTools.length === 0 ? (
             <div className="rounded-lg border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-              No tools are available in this category yet.
+              No AI tools are available yet. Developer tools stay under Developer.
             </div>
           ) : null}
         </div>

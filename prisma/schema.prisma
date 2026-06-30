@@ -30,8 +30,20 @@ model User {
   notifications Notification[]
   activities    RecentActivity[]
   statistics    UserStatistics?
+  settings      UserSettings?
+  uploadedFiles UploadedFile[]
+  shareLinks    ShareLink[]
+  shortLinks    ShortLink[]
+  bioPage       BioPage?
+  notes         Note[]
+  pastes        Paste[]
+  linkEvents    LinkEvent[]
   followers     Follow[]  @relation("following")
   following     Follow[]  @relation("follower")
+  role          UserRole  @default(USER)
+  plan          PremiumPlan @default(FREE)
+  storageLimitBytes BigInt @default(1073741824)
+  uploadLimitBytes  BigInt @default(16777216)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -237,6 +249,187 @@ model Follow {
 
   @@unique([followerId, followingId])
   @@index([followingId])
+}
+
+model UserSettings {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId              String   @unique @db.ObjectId
+  theme               String   @default("system")
+  emailNotifications  Boolean  @default(true)
+  productUpdates      Boolean  @default(true)
+  securityAlerts      Boolean  @default(true)
+  twoFactorEnabled    Boolean  @default(false)
+  defaultFileExpiryDays Int?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UploadedFile {
+  id           String             @id @default(auto()) @map("_id") @db.ObjectId
+  ownerId      String             @db.ObjectId
+  name         String
+  key          String?
+  url          String
+  mimeType     String
+  sizeBytes    BigInt
+  passwordHash String?
+  expiresAt    DateTime?
+  status       UploadedFileStatus @default(ACTIVE)
+  downloads    Int                @default(0)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  owner        User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  shareLinks   ShareLink[]
+  events       LinkEvent[]
+
+  @@index([ownerId, createdAt])
+  @@index([status, expiresAt])
+}
+
+model ShareLink {
+  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  ownerId       String          @db.ObjectId
+  fileId        String          @db.ObjectId
+  token         String          @unique
+  access        ShareLinkAccess @default(PUBLIC)
+  passwordHash  String?
+  expiresAt     DateTime?
+  maxDownloads  Int?
+  downloadCount Int             @default(0)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  owner         User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  file          UploadedFile    @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  events        LinkEvent[]
+
+  @@index([ownerId, createdAt])
+  @@index([fileId])
+  @@index([expiresAt])
+}
+
+model ShortLink {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  ownerId     String      @db.ObjectId
+  slug        String      @unique
+  destination String
+  title       String?
+  clicks      Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  owner       User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  events      LinkEvent[]
+
+  @@index([ownerId, createdAt])
+}
+
+model BioPage {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  ownerId   String    @unique @db.ObjectId
+  slug      String    @unique
+  title     String
+  bio       String?
+  avatarUrl String?
+  theme     String    @default("mediazy")
+  links     BioLink[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  owner     User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+}
+
+model BioLink {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  pageId    String   @db.ObjectId
+  label     String
+  url       String
+  position  Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  page      BioPage  @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId, position])
+}
+
+model Note {
+  id        String                 @id @default(auto()) @map("_id") @db.ObjectId
+  ownerId   String                 @db.ObjectId
+  title     String
+  content   String
+  status    ProductivityItemStatus @default(ACTIVE)
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+  owner     User                   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId, updatedAt])
+}
+
+model Paste {
+  id          String                 @id @default(auto()) @map("_id") @db.ObjectId
+  ownerId     String                 @db.ObjectId
+  slug        String                 @unique
+  title       String
+  content     String
+  language    String?
+  visibility  String                 @default("private")
+  expiresAt   DateTime?
+  status      ProductivityItemStatus @default(ACTIVE)
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  owner       User                   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId, createdAt])
+  @@index([expiresAt])
+}
+
+model LinkEvent {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  ownerId     String?     @db.ObjectId
+  fileId      String?     @db.ObjectId
+  shareLinkId String?     @db.ObjectId
+  shortLinkId String?     @db.ObjectId
+  type        String
+  ipHash      String?
+  userAgent   String?
+  metadata    Json?
+  createdAt   DateTime    @default(now())
+  owner       User?       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  file        UploadedFile? @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  shareLink   ShareLink?  @relation(fields: [shareLinkId], references: [id], onDelete: Cascade)
+  shortLink   ShortLink?  @relation(fields: [shortLinkId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId, createdAt])
+  @@index([shareLinkId, createdAt])
+  @@index([shortLinkId, createdAt])
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum PremiumPlan {
+  FREE
+  PRO
+  BUSINESS
+}
+
+enum UploadedFileStatus {
+  ACTIVE
+  EXPIRED
+  FLAGGED
+  DELETED
+}
+
+enum ShareLinkAccess {
+  PUBLIC
+  PASSWORD
+}
+
+enum ProductivityItemStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
 }
 
 enum XPAction {

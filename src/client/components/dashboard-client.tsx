@@ -96,8 +96,10 @@ export function DashboardClient({ user, ecosystem }: { user: DashboardUser; ecos
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 <Link href="/tools" className="block text-muted-foreground hover:text-foreground">All tools</Link>
-                <Link href="/about" className="block text-muted-foreground hover:text-foreground">About KenoraTech</Link>
-                <Link href="/settings" className="block text-muted-foreground hover:text-foreground">Settings roadmap</Link>
+                <Link href="/cloud" className="block text-muted-foreground hover:text-foreground">Cloud</Link>
+                <Link href="/productivity" className="block text-muted-foreground hover:text-foreground">Productivity</Link>
+                <Link href="/settings" className="block text-muted-foreground hover:text-foreground">Settings</Link>
+                <Link href="/premium" className="block text-muted-foreground hover:text-foreground">Premium</Link>
               </CardContent>
             </Card>
           </aside>
