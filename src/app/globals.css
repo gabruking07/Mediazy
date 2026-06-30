@@ -46,9 +46,21 @@
 
   .mediazy-spotlight {
     background-image:
-      linear-gradient(135deg, rgba(37, 99, 235, 0.18), transparent 38%),
-      linear-gradient(225deg, rgba(20, 184, 166, 0.14), transparent 36%),
-      linear-gradient(0deg, rgba(15, 23, 42, 1), rgba(15, 23, 42, 1));
+      radial-gradient(circle at 18% 20%, rgba(124, 58, 237, 0.14), transparent 34%),
+      radial-gradient(circle at 82% 18%, rgba(236, 72, 153, 0.11), transparent 30%),
+      linear-gradient(180deg, #ffffff, #f8fbff);
+  }
+
+  .mediazy-dot-grid {
+    background-image: radial-gradient(circle, rgba(99, 102, 241, 0.18) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  .text-gradient-purple {
+    background: linear-gradient(92deg, #4f46e5 0%, #7c3aed 52%, #2563eb 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
   .glass-panel {

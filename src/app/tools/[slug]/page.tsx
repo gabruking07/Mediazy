@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: tool.name,
     description: tool.description,
-    authors: [{ name: "Aurex Technologies" }],
+    authors: [{ name: "KenoraTech" }],
     openGraph: {
       title: `${tool.name} - Mediazy`,
       description: tool.description,

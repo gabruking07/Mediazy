@@ -5,7 +5,7 @@ import { Button } from "@/client/components/ui/button";
 import { Textarea } from "@/client/components/ui/textarea";
 
 export function JsonFormatterTool() {
-  const [input, setInput] = useState('{"mediazy":"built by Aurex Technologies"}');
+  const [input, setInput] = useState('{"mediazy":"built by KenoraTech"}');
   const [status, setStatus] = useState("Valid JSON");
 
   function transform(type: "format" | "minify") {

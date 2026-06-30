@@ -15,11 +15,11 @@ export function createWelcomeEmail(name: string): EmailTemplate {
       <div style="font-family:Inter,Arial,sans-serif;color:#0F172A;line-height:1.6">
         <h1>Welcome to Mediazy</h1>
         <p>Hi ${escapeHtml(displayName)}, your Mediazy workspace is ready.</p>
-        <p>Mediazy is a product created and owned by Aurex Technologies.</p>
+        <p>Mediazy is a product created and owned by KenoraTech.</p>
         <p style="margin-top:32px;color:#64748B;font-size:12px">${brand.emailFooter}</p>
       </div>
     `,
-    text: `Hi ${displayName}, your Mediazy workspace is ready.\n\nMediazy is a product created and owned by Aurex Technologies.\n\n${brand.emailFooter}`
+    text: `Hi ${displayName}, your Mediazy workspace is ready.\n\nMediazy is a product created and owned by KenoraTech.\n\n${brand.emailFooter}`
   };
 }
 

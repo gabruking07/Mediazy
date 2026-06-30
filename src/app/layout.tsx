@@ -23,9 +23,9 @@ export const metadata: Metadata = {
     template: "%s | Mediazy"
   },
   description: defaultDescription,
-  authors: [{ name: "Aurex Technologies" }],
-  creator: "Aurex Technologies",
-  publisher: "Aurex Technologies",
+  authors: [{ name: "KenoraTech" }],
+  creator: "KenoraTech",
+  publisher: "KenoraTech",
   openGraph: {
     title: "Mediazy",
     description: defaultDescription,

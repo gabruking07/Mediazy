@@ -22,7 +22,7 @@ const transforms = {
 };
 
 export function TextCaseTool() {
-  const [input, setInput] = useState("Mediazy is built by Aurex Technologies");
+  const [input, setInput] = useState("Mediazy is built by KenoraTech");
   const [mode, setMode] = useState<keyof typeof transforms>("Title Case");
   const output = useMemo(() => transforms[mode](input), [input, mode]);
 

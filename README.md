@@ -1,8 +1,8 @@
-# Mediazy — Built by Aurex Technologies
+# Mediazy - Built by KenoraTech
 
 Mediazy is a modern SaaS web application for fast PDF, image, developer, text, and utility tools.
 
-Mediazy is created and owned by Aurex Technologies.
+Mediazy is created and owned by KenoraTech.
 
 ## Stack
 

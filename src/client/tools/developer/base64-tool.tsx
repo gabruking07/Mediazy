@@ -5,7 +5,7 @@ import { Button } from "@/client/components/ui/button";
 import { Textarea } from "@/client/components/ui/textarea";
 
 export function Base64Tool() {
-  const [value, setValue] = useState("Mediazy by Aurex Technologies");
+  const [value, setValue] = useState("Mediazy by KenoraTech");
 
   function encode() {
     setValue(btoa(unescape(encodeURIComponent(value))));

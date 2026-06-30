@@ -96,7 +96,7 @@ export function DashboardClient({ user, ecosystem }: { user: DashboardUser; ecos
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 <Link href="/tools" className="block text-muted-foreground hover:text-foreground">All tools</Link>
-                <Link href="/about" className="block text-muted-foreground hover:text-foreground">About Aurex Technologies</Link>
+                <Link href="/about" className="block text-muted-foreground hover:text-foreground">About KenoraTech</Link>
                 <Link href="/settings" className="block text-muted-foreground hover:text-foreground">Settings roadmap</Link>
               </CardContent>
             </Card>

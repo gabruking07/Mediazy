@@ -5,8 +5,8 @@ import { brand } from "@/shared/brand";
 
 export const metadata: Metadata = {
   title: "Contact",
-  description: "Contact Mediazy support by Aurex Technologies.",
-  authors: [{ name: "Aurex Technologies" }]
+  description: "Contact Mediazy support by KenoraTech.",
+  authors: [{ name: "KenoraTech" }]
 };
 
 export default function ContactPage() {

@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: category.name,
     description: category.description,
-    authors: [{ name: "Aurex Technologies" }]
+    authors: [{ name: "KenoraTech" }]
   };
 }
 

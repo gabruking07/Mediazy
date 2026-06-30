@@ -8,7 +8,7 @@ import { brand } from "@/shared/brand";
 export const metadata: Metadata = {
   title: "Login",
   description: "Login to your Mediazy dashboard.",
-  authors: [{ name: "Aurex Technologies" }]
+  authors: [{ name: "KenoraTech" }]
 };
 
 export default function LoginPage() {

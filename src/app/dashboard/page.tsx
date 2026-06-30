@@ -9,7 +9,7 @@ import { getEcosystemDashboard } from "@/server/ecosystem/dashboard-service";
 export const metadata: Metadata = {
   title: "Dashboard",
   description: "Manage Mediazy favorites, recently used tools, and your user profile.",
-  authors: [{ name: "Aurex Technologies" }]
+  authors: [{ name: "KenoraTech" }]
 };
 
 export default async function DashboardPage() {

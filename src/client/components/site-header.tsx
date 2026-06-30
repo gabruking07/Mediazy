@@ -1,7 +1,8 @@
 "use client";
 
-import { Command, Moon, Search, Sun } from "lucide-react";
+import { ChevronDown, Coins, Command, Moon, Search, Star, Sun } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useMemo, useState } from "react";
 import { Button } from "@/client/components/ui/button";
@@ -12,52 +13,63 @@ import { searchTools } from "@/shared/tools/registry";
 export function SiteHeader() {
   const { theme, setTheme } = useTheme();
   const [query, setQuery] = useState("");
+  const pathname = usePathname();
   const matches = useMemo(() => searchTools(query).slice(0, 5), [query]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/80 bg-background/82 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
+    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
+      <div className="mx-auto flex h-[68px] max-w-7xl items-center gap-4 px-4 sm:px-6">
         <Link href="/" aria-label="Mediazy home">
           <BrandMark />
         </Link>
-        <nav className="hidden items-center gap-1 rounded-lg border border-border bg-muted/50 p-1 text-sm text-muted-foreground md:flex">
-          <NavLink href="/tools">Tools</NavLink>
-          <NavLink href="/categories/image">Categories</NavLink>
-          <NavLink href="/about">About</NavLink>
-          <NavLink href="/contact">Contact</NavLink>
+
+        <nav className="hidden items-center gap-3 text-sm font-semibold text-slate-950 lg:flex">
+          <NavLink href="/" active={pathname === "/"}>Home</NavLink>
+          <NavLink href="/tools" active={pathname.startsWith("/tools")}>Tools <ChevronDown className="size-3.5" /></NavLink>
+          <NavLink href="/categories/image" active={pathname.startsWith("/categories")}>AI Tools</NavLink>
+          <NavLink href="/about" active={pathname === "/about"}>Resources <ChevronDown className="size-3.5" /></NavLink>
+          <NavLink href="/contact" active={pathname === "/contact"}>Pricing</NavLink>
+          <NavLink href="/dashboard" active={pathname === "/dashboard"}>Blog</NavLink>
         </nav>
-        <div className="relative ml-auto hidden w-full max-w-sm md:block">
-          <Search className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
-          <Command className="pointer-events-none absolute right-3 top-2.5 size-4 text-muted-foreground" />
-          <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search Mediazy" className="pl-9 pr-9" />
+
+        <div className="relative ml-auto hidden w-full max-w-xs md:block">
+          <Search className="pointer-events-none absolute left-3 top-2.5 size-4 text-slate-500" />
+          <span className="pointer-events-none absolute right-2 top-2 inline-flex h-6 items-center gap-1 rounded-md bg-white px-2 text-xs font-semibold text-slate-500 shadow-sm">
+            <Command className="size-3" /> K
+          </span>
+          <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search tools..." className="h-10 rounded-2xl border-slate-200 bg-slate-50 pl-9 pr-16 shadow-sm" />
           {query ? (
-            <div className="absolute mt-2 w-full overflow-hidden rounded-lg border border-border bg-card shadow-premium">
+            <div className="absolute mt-2 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-premium">
               {matches.map((tool) => (
-                <Link key={tool.slug} href={`/tools/${tool.slug}`} className="block px-3 py-2 text-sm hover:bg-muted" onClick={() => setQuery("")}>
+                <Link key={tool.slug} href={`/tools/${tool.slug}`} className="block px-3 py-2 text-sm hover:bg-violet-50" onClick={() => setQuery("")}>
                   {tool.name}
                 </Link>
               ))}
             </div>
           ) : null}
         </div>
-        <Button type="button" variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Toggle dark mode">
+
+        <Button type="button" variant="outline" size="icon" className="rounded-full border-slate-200 bg-white shadow-sm" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Toggle dark mode">
           <Sun className="size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute size-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
         </Button>
-        <Button asChild variant="outline" className="hidden sm:inline-flex">
-          <Link href="/login">Login</Link>
-        </Button>
-        <Button asChild>
-          <Link href="/dashboard">Dashboard</Link>
-        </Button>
+        <Link href="/dashboard" className="hidden h-10 items-center gap-2 rounded-full border border-violet-100 bg-violet-50 px-4 text-sm font-bold text-violet-700 sm:inline-flex">
+          <Star className="size-4 fill-amber-400 text-amber-400" /> 2450 XP
+        </Link>
+        <Link href="/dashboard" className="hidden h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-bold text-slate-950 shadow-sm sm:inline-flex">
+          <Coins className="size-4 text-amber-500" /> 1250
+        </Link>
+        <Link href="/login" className="grid size-10 place-items-center rounded-full bg-gradient-to-br from-violet-500 to-blue-600 text-sm font-bold text-white shadow-sm">
+          M
+        </Link>
       </div>
     </header>
   );
 }
 
-function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+function NavLink({ href, active, children }: { href: string; active?: boolean; children: React.ReactNode }) {
   return (
-    <Link href={href} className="rounded-md px-3 py-1.5 transition hover:bg-background hover:text-foreground hover:shadow-sm">
+    <Link href={href} className={`inline-flex items-center gap-1 rounded-full px-4 py-2 transition hover:bg-violet-50 hover:text-violet-700 ${active ? "bg-violet-100 text-violet-700" : ""}`}>
       {children}
     </Link>
   );

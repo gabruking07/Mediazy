@@ -1,12 +1,12 @@
 export const brand = {
   product: "Mediazy",
-  company: "Aurex Technologies",
+  company: "KenoraTech",
   supportEmail: "support@mediazy.xyz",
   url: process.env.NEXT_PUBLIC_APP_URL ?? "https://mediazy.xyz",
-  footer: "© 2026 Mediazy. A product by Aurex Technologies. All Rights Reserved.",
-  dashboardFooter: "Powered by Aurex Technologies",
-  legalOwnership: "Mediazy is owned and operated by Aurex Technologies.",
-  emailFooter: "Sent with love by Aurex Technologies"
+  footer: "(c) 2026 Mediazy. A product by KenoraTech. All Rights Reserved.",
+  dashboardFooter: "Powered by KenoraTech",
+  legalOwnership: "Mediazy is owned and operated by KenoraTech.",
+  emailFooter: "Sent with love by KenoraTech"
 };
 
 export const defaultDescription =
