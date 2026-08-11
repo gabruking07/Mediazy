@@ -1,207 +1,69 @@
 import Link from "next/link";
-import Image from "next/image";
 import {
   ArrowRight,
-  BadgeCheck,
-  Blocks,
-  Coins,
-  FileText,
-  Flame,
+  Check,
   ImageIcon,
-  Lock,
-  Search,
-  ShieldCheck,
+  MessageSquareText,
   Sparkles,
-  Star,
-  Wand2,
-  Zap
+  WandSparkles
 } from "lucide-react";
 import { MarketingShell } from "@/client/components/marketing-shell";
-import { Button } from "@/client/components/ui/button";
-import { Card, CardContent } from "@/client/components/ui/card";
-import { ToolCard } from "@/client/components/tool-card";
-import { tools } from "@/shared/tools/registry";
-import { brand } from "@/shared/brand";
 
-const featureStrip = [
-  { icon: Wand2, title: "Easy to Use", text: "Simple and intuitive interface" },
-  { icon: Zap, title: "Blazing Fast", text: "Lightning fast performance" },
-  { icon: BadgeCheck, title: "100% Free", text: "Core tools stay free forever" },
-  { icon: ShieldCheck, title: "Secure", text: "Your data is safe with us" }
+const features = [
+  { icon: MessageSquareText, title: "AI Chat", text: "Smart conversations for ideas, research and creation.", href: "/chat" },
+  { icon: ImageIcon, title: "AI Image", text: "Turn prompts into stunning visuals in seconds.", href: "/image" },
+  { icon: WandSparkles, title: "AI Content", text: "Create captions, scripts and marketing copy.", href: "/content" }
 ];
 
-const categoryPills = [
-  { label: "All Tools", icon: Blocks, href: "/tools" },
-  { label: "AI Tools", icon: Sparkles, href: "/ai" },
-  { label: "Image Tools", icon: ImageIcon, href: "/categories/image" },
-  { label: "PDF Tools", icon: FileText, href: "/categories/pdf" },
-  { label: "Converters", icon: ArrowRight, href: "/categories/text" },
-  { label: "Utilities", icon: Lock, href: "/categories/utility" }
-] as const;
-
-const rewardTasks = [
-  ["Daily Quest", "Compress 3 images", "2/3", "70%"],
-  ["Streak", "7 Days", "Keep it up", "100%"]
-];
-
-const earningWays = [
-  { title: "Use Any Tool", value: "+10 XP", icon: Wand2 },
-  { title: "Complete Daily Quest", value: "+50 XP", icon: Star },
-  { title: "Maintain Streak", value: "+20 XP", icon: Flame }
-];
-
-const faqs = [
-  ["Who owns Mediazy?", `Mediazy is created, owned, and operated by ${brand.company}.`],
-  ["Can I add new tools?", "Yes. Each tool is registered as an independent module, so new tools can be added without changing existing pages."],
-  ["Is Mediazy built for teams?", "The foundation supports authenticated dashboards, profiles, favorites, recents, and SaaS growth features."]
+const plans = [
+  { name: "Free", price: "₹0", detail: "100 credits / month", features: ["AI Chat", "AI Content", "Limited image generation"], cta: "Start Free" },
+  { name: "Creator", price: "₹499", detail: "1,000 credits / month", features: ["AI Chat, Image & Content", "More generations", "Priority processing"], cta: "Start Creating", featured: true },
+  { name: "Pro", price: "₹999", detail: "3,500 credits / month", features: ["Advanced generation", "Priority processing", "Future advanced features"], cta: "Go Pro" }
 ];
 
 export default function Home() {
-  const popularTools = tools.filter((tool) => tool.popular).slice(0, 5);
-
   return (
     <MarketingShell>
-      <main className="overflow-hidden bg-white text-slate-950 dark:bg-slate-950 dark:text-slate-100">
-        <section className="relative border-b border-slate-200 bg-[radial-gradient(circle_at_18%_20%,rgba(99,102,241,0.13),transparent_34%),radial-gradient(circle_at_84%_18%,rgba(236,72,153,0.12),transparent_30%),linear-gradient(180deg,#fff,#f8fbff)] dark:border-slate-800 dark:bg-[radial-gradient(circle_at_18%_20%,rgba(124,58,237,0.18),transparent_34%),radial-gradient(circle_at_84%_18%,rgba(37,99,235,0.14),transparent_30%),linear-gradient(180deg,#020617,#0f172a)]">
-          <div className="absolute inset-0 mediazy-dot-grid opacity-70" />
-          <div className="relative mx-auto grid min-h-[680px] max-w-[1320px] items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1fr_310px]">
-            <div className="text-center">
-              <div className="mx-auto mb-8 inline-flex items-center gap-2 rounded-full bg-violet-50 px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-violet-100 dark:bg-violet-500/10 dark:text-slate-100 dark:ring-violet-400/20">
-                <Sparkles className="size-4 text-violet-600" />
-                Smart Tools for Smart People
+      <main className="mediazy-page">
+        <section className="mediazy-hero">
+          <div className="mediazy-orb mediazy-orb-one" />
+          <div className="mediazy-orb mediazy-orb-two" />
+          <div className="mediazy-wrap mediazy-hero-grid">
+            <div className="relative z-10">
+              <span className="eyebrow"><Sparkles size={14} /> AI Creative Workspace</span>
+              <h1>Create. Imagine.<br /><span>Generate.</span></h1>
+              <p className="hero-copy">AI chat, image generation and content creation in one creative workspace.</p>
+              <div className="hero-actions">
+                <Link href="/signup" className="mz-button">Start Creating <ArrowRight size={17} /></Link>
+                <Link href="#tools" className="mz-button mz-button-quiet">Explore Tools</Link>
               </div>
-              <h1 className="mx-auto max-w-4xl text-5xl font-black leading-[1.08] tracking-tight sm:text-6xl lg:text-7xl">
-                Everything You Need, <br className="hidden sm:block" />
-                In <span className="text-gradient-purple">One</span> Place.
-              </h1>
-              <p className="mx-auto mt-7 max-w-3xl text-xl leading-9 text-slate-600 dark:text-slate-300">
-                100+ free online tools to make your work easier, faster and smarter.<br className="hidden sm:block" />
-                No sign up required.
-              </p>
-
-              <div className="mx-auto mt-9 flex h-16 max-w-3xl items-center gap-4 rounded-[28px] border border-violet-300 bg-white px-6 shadow-[0_24px_70px_-42px_rgba(79,70,229,0.8)] dark:border-violet-400/30 dark:bg-slate-900/90 lg:mx-0">
-                <Search className="size-6 text-slate-500 dark:text-slate-400" />
-                <span className="min-w-0 flex-1 text-left text-lg text-slate-500 dark:text-slate-400">Type a command or search any tool...</span>
-                <span className="rounded-2xl bg-slate-100 px-3 py-2 text-sm font-bold text-slate-500">⌘ K</span>
-              </div>
-
-              <div className="mt-7 flex flex-wrap justify-center gap-3 lg:justify-start">
-                {categoryPills.map((pill, index) => (
-                  <Link
-                    key={pill.label}
-                    href={pill.href}
-                    className={`inline-flex h-12 items-center gap-2 rounded-full border px-5 text-sm font-bold shadow-sm transition hover:-translate-y-0.5 ${index === 0 ? "border-transparent bg-gradient-to-r from-violet-600 to-blue-600 text-white" : "border-slate-200 bg-white text-slate-950 hover:border-violet-200 hover:text-violet-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-violet-400/50 dark:hover:text-violet-200"}`}
-                  >
-                    <pill.icon className="size-4" />
-                    {pill.label}
-                  </Link>
-                ))}
-              </div>
+              <div className="creator-proof"><div className="avatars"><i>R</i><i>A</i><i>J</i><i>S</i></div><strong>10K+</strong><span>creators and businesses</span></div>
             </div>
-
-            <aside className="relative mx-auto hidden w-full max-w-sm lg:block">
-              <div className="absolute -top-28 left-16 grid size-36 place-items-center rounded-[32px] bg-gradient-to-br from-white to-violet-100 shadow-[0_35px_80px_-36px_rgba(79,70,229,0.9)] dark:from-slate-900 dark:to-violet-950">
-                <Image src="/assets/mediazy-logo.png" alt="Mediazy logo" width={104} height={104} className="size-24 object-contain" priority />
-              </div>
-              <div className="rounded-[28px] bg-white p-6 shadow-[0_28px_90px_-46px_rgba(15,23,42,0.45)] ring-1 ring-slate-100 dark:bg-slate-900 dark:ring-slate-800">
-                {rewardTasks.map(([label, title, value, progress], index) => (
-                  <div key={label} className={index === 0 ? "border-b border-slate-100 pb-7 dark:border-slate-800" : "pt-7"}>
-                    <p className="font-bold text-slate-950 dark:text-slate-100">{label}</p>
-                    <p className="mt-3 text-slate-700 dark:text-slate-300">{title}</p>
-                    <div className="mt-4 flex items-center justify-between">
-                      <span className="font-bold text-violet-600">{index === 0 ? "+50 XP" : <Flame className="size-7 text-orange-500" />}</span>
-                      <span className="font-semibold text-slate-600 dark:text-slate-300">{value}</span>
-                    </div>
-                    <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                      <div className="h-full rounded-full bg-gradient-to-r from-blue-600 via-violet-600 to-fuchsia-500" style={{ width: progress }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </aside>
-          </div>
-        </section>
-
-        <section className="mx-auto grid max-w-7xl gap-6 px-4 py-12 sm:px-6 md:grid-cols-4">
-          {featureStrip.map((feature) => (
-            <div key={feature.title} className="flex items-start gap-4 border-slate-200 dark:border-slate-800 md:border-r md:pr-6 last:border-r-0">
-              <span className="grid size-14 shrink-0 place-items-center rounded-full bg-violet-100 text-violet-600 dark:bg-violet-500/15 dark:text-violet-200">
-                <feature.icon className="size-6" />
-              </span>
-              <span>
-                <span className="block font-bold">{feature.title}</span>
-                <span className="mt-2 block leading-6 text-slate-600 dark:text-slate-400">{feature.text}</span>
-              </span>
-            </div>
-          ))}
-        </section>
-
-        <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_26px_90px_-58px_rgba(15,23,42,0.55)] dark:border-slate-800 dark:bg-slate-900">
-            <div className="mb-7 flex items-center justify-between gap-4">
-              <h2 className="text-2xl font-black tracking-tight">Popular Tools</h2>
-              <Button asChild variant="link" className="font-bold no-underline">
-                <Link href="/tools">View all <ArrowRight className="size-4" /></Link>
-              </Button>
-            </div>
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-5">
-              {popularTools.map((tool) => <ToolCard key={tool.slug} tool={tool} />)}
+            <div className="hero-visual" aria-label="Mediazy creative preview">
+              <div className="visual-top"><span><Sparkles size={14} /> AI Image Studio</span><span className="live-dot">Live</span></div>
+              <div className="visual-art"><div className="planet" /><div className="astronaut">✦</div><div className="star star-a" /><div className="star star-b" /></div>
+              <div className="visual-tag tag-chat"><MessageSquareText size={14} /> AI Chat</div>
+              <div className="visual-tag tag-image"><ImageIcon size={14} /> AI Image</div>
+              <div className="visual-tag tag-content"><WandSparkles size={14} /> AI Content</div>
             </div>
           </div>
         </section>
 
-        <section className="border-y border-slate-200 bg-slate-50/80 py-16 dark:border-slate-800 dark:bg-slate-900/45">
-          <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_360px]">
-            <div>
-              <p className="text-sm font-bold text-violet-600">Ways to Earn XP & Coins</p>
-              <h2 className="mt-2 text-3xl font-black tracking-tight">Progress that makes useful tools feel rewarding.</h2>
-              <div className="mt-7 grid gap-4 md:grid-cols-3">
-                {earningWays.map((way) => (
-                  <Card key={way.title} className="shadow-sm">
-                    <CardContent className="p-5 text-center">
-                      <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-violet-100 text-violet-600 dark:bg-violet-500/15 dark:text-violet-200">
-                        <way.icon className="size-6" />
-                      </span>
-                      <p className="mt-4 font-bold">{way.title}</p>
-                      <p className="mt-3 text-sm font-semibold text-violet-600">{way.value}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-            <Card className="shadow-sm">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-black">XP Leaderboard</h3>
-                  <Link href="/dashboard" className="text-sm font-bold text-violet-600">View All</Link>
-                </div>
-                <div className="mt-5 grid gap-4">
-                  {["Mediazy Pro", "Aman Verma", "Riya Shah", "Saurav Patel"].map((name, index) => (
-                    <div key={name} className="flex items-center gap-3">
-                      <span className="w-5 text-sm font-bold text-slate-500 dark:text-slate-400">{index + 1}</span>
-                      <span className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-violet-500 to-blue-600 text-xs font-bold text-white">{name[0]}</span>
-                      <span className="min-w-0 flex-1 font-semibold">{name}</span>
-                      <span className="text-sm font-bold text-violet-600">{5600 - index * 600} XP</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+        <section id="tools" className="mediazy-wrap tool-section">
+          <div className="section-intro"><span className="eyebrow">ONE WORKSPACE, ENDLESS IDEAS</span><h2>Your creative flow, amplified.</h2><p>Use the right AI tool without breaking your momentum.</p></div>
+          <div className="feature-grid">
+            {features.map(({ icon: Icon, title, text, href }) => <Link href={href} key={title} className="feature-card"><span className="feature-icon"><Icon size={22} /></span><h3>{title}</h3><p>{text}</p><span className="card-arrow"><ArrowRight size={17} /></span></Link>)}
           </div>
         </section>
 
-        <section className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
-          <h2 className="text-3xl font-black tracking-tight">FAQ</h2>
-          <div className="mt-6 divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
-            {faqs.map(([question, answer]) => (
-              <div key={question} className="p-5">
-                <h3 className="font-bold">{question}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{answer}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        <section className="how-section"><div className="mediazy-wrap"><div className="section-intro center"><span className="eyebrow">SIMPLE BY DESIGN</span><h2>From a thought to a finished idea.</h2></div><div className="steps"><Step number="01" title="Describe" text="Tell Mediazy what you want to make." /><Step number="02" title="Generate" text="Choose a tool and let AI do the heavy lifting." /><Step number="03" title="Create" text="Refine, save and share your best work." /></div></div></section>
+
+        <section className="mediazy-wrap pricing-section" id="pricing"><div className="pricing-heading"><div><span className="eyebrow">SIMPLE PRICING</span><h2>Choose your creative pace.</h2></div><span className="billing-toggle"><b>Monthly</b><em>Yearly · Save 20%</em></span></div><div className="pricing-grid">{plans.map((plan) => <article key={plan.name} className={`plan-card ${plan.featured ? "plan-featured" : ""}`}>{plan.featured && <span className="recommended">Most popular</span>}<h3>{plan.name}</h3><p className="price"><strong>{plan.price}</strong><span>/month</span></p><p className="plan-detail">{plan.detail}</p><ul>{plan.features.map((feature) => <li key={feature}><Check size={15} />{feature}</li>)}</ul><Link href="/signup" className={`mz-button ${plan.featured ? "" : "mz-button-quiet"}`}>{plan.cta}</Link></article>)}</div></section>
       </main>
     </MarketingShell>
   );
+}
+
+function Step({ number, title, text }: { number: string; title: string; text: string }) {
+  return <article className="step"><span>{number}</span><h3>{title}</h3><p>{text}</p></article>;
 }
