@@ -1,0 +1,12 @@
+{
+  "files.exclude": {
+    ".next": true,
+    "node_modules": true,
+    "dev-server.log": true,
+    "dev-server.err.log": true
+  },
+  "search.exclude": {
+    ".next": true,
+    "node_modules": true
+  }
+}
